@@ -56,12 +56,22 @@ public class Main {
     }
 
     private static ArrayList<Integer> calculateS(ArrayList<Parti> partis){
-        ArrayList<Integer> s = new ArrayList<>(Collections.nCopies(partis.size(), 0));
+        int numOfParties = partis.size();
+        ArrayList<ArrayList<Integer>> tempS = new ArrayList<>();
+        ArrayList<Integer> sFromParti;
 
-        for (int i = 0; i < partis.size(); i++) {
-            ArrayList<Integer> sFromParti = partis.get(i).calculateS(partis.get(i).getSharesOfOtherSecret());
-            System.out.println(sFromParti);
+        for (int i = 0; i < numOfParties; i++) {
+            ArrayList<ArrayList<Integer>> partiShares = partis.get(i).getSharesOfOtherSecret();
+            sFromParti = partis.get(i).calculateS(partiShares);
+            tempS.add(sFromParti);
 
+        }
+        ArrayList<Integer> s = new ArrayList<>(Collections.nCopies(numOfParties,0));
+        for (int i = 0; i<numOfParties; i++){
+            for (int j = 0; j<s.size(); j++){
+                int toAdd = Math.max(s.get(i),tempS.get(j).get(i));
+                s.set(i,toAdd);
+            }
         }
         return s;
     }
