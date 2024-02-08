@@ -55,4 +55,12 @@ public class Parti {
         return s;
     }
 
+    public int calculateFinalVote(ArrayList<Integer> s){
+        int sum = 0;
+        for (int i = 0; i < s.size(); i++){
+            sum += s.get(i);
+        }
+        return sum % P;
+    }
+
 }

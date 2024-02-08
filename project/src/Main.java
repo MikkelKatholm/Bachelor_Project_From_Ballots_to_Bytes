@@ -5,7 +5,7 @@ import java.util.Collections;
 public class Main {
 
     public static void main(String[] args) {
-        int numberOfParties = 3;
+        int numberOfParties = 30;
 
         // make 3 parties
         ArrayList<Parti> partis = makeParties(numberOfParties);
@@ -18,15 +18,19 @@ public class Main {
         // distribute shares of each party to all other parties
         distributeShares(partis);
 
-        // print shares of each party
-        for (Parti parti : partis) {
-            System.out.println(parti.getSharesOfOwnSecret());
-            System.out.println(parti.getSharesOfOtherSecret() + "\n");
-        }
-
         // calculate s
         ArrayList<Integer> s = calculateS(partis);
-        System.out.println(s);
+
+        // calculate final vote
+        ArrayList<Integer> finalVotes = new ArrayList<>();
+        for (Parti parti : partis) {
+            finalVotes.add(parti.calculateFinalVote(s));
+        }
+
+        boolean allEqual = finalVotes.stream().distinct().limit(2).count() <= 1;
+        String msg = allEqual ? "All voters agree on " + finalVotes.get(0) : "Voters disagree";
+        System.out.println(msg);
+
 
 
     }
@@ -64,8 +68,8 @@ public class Main {
             ArrayList<ArrayList<Integer>> partiShares = partis.get(i).getSharesOfOtherSecret();
             sFromParti = partis.get(i).calculateS(partiShares);
             tempS.add(sFromParti);
-
         }
+
         ArrayList<Integer> s = new ArrayList<>(Collections.nCopies(numOfParties,0));
         for (int i = 0; i<numOfParties; i++){
             for (int j = 0; j<s.size(); j++){
@@ -75,5 +79,4 @@ public class Main {
         }
         return s;
     }
-
 }
