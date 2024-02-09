@@ -5,7 +5,7 @@ import java.util.Collections;
 public class Main {
 
     public static void main(String[] args) {
-        int numberOfParties = 30;
+        int numberOfParties = 3;
 
         // make 3 parties
         ArrayList<Parti> partis = makeParties(numberOfParties);
@@ -27,12 +27,10 @@ public class Main {
             finalVotes.add(parti.calculateFinalVote(s));
         }
 
+        // Check if all voters agree
         boolean allEqual = finalVotes.stream().distinct().limit(2).count() <= 1;
         String msg = allEqual ? "All voters agree on " + finalVotes.get(0) : "Voters disagree";
         System.out.println(msg);
-
-
-
     }
 
     private static ArrayList<Parti> makeParties(int n){
@@ -46,13 +44,12 @@ public class Main {
 
     private static void distributeShares(ArrayList<Parti> partis){
         // i is parties that send shares
-        for (int i = 0; i<partis.size(); i++){
+        for (int i = 0; i<partis.size(); i++){ //clients
             ArrayList<Integer> shares = partis.get(i).getSharesOfOwnSecret();
             // j is parties that receive shares
             for (int j = 0; j<partis.size(); j++){
                     //send all shares except jth share to jth party
                     ArrayList<Integer> sharesToSend = new ArrayList<>(shares);
-//                    sharesToSend.remove(j);
                     sharesToSend.set(j,0);
                     partis.get(j).addSharesOfOtherSecret(sharesToSend);
             }
@@ -66,10 +63,11 @@ public class Main {
 
         for (int i = 0; i < numOfParties; i++) {
             ArrayList<ArrayList<Integer>> partiShares = partis.get(i).getSharesOfOtherSecret();
+            System.out.println(partiShares);
             sFromParti = partis.get(i).calculateS(partiShares);
             tempS.add(sFromParti);
         }
-
+        System.out.println(tempS);
         ArrayList<Integer> s = new ArrayList<>(Collections.nCopies(numOfParties,0));
         for (int i = 0; i<numOfParties; i++){
             for (int j = 0; j<s.size(); j++){
