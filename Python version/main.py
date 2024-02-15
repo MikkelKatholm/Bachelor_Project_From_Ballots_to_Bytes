@@ -5,9 +5,9 @@ import copy
 numOfServers = 3
 numOfClients = 20
 
-def setUp():
+def setUp(s,c):
     # Create clients and servers
-    clients, servers = makeServersAndClients()
+    clients, servers = makeServersAndClients(s,c)
 
     # Each client splits their secret
     splitVote(clients)
@@ -27,7 +27,8 @@ def setUp():
     # Check if the vote result is the same for all servers
     isAllSame = all(x == votes[0] for x in votes)
     msg = "All servers agree on: " + str(votes[0]) if isAllSame else "Servers disagree"
-    print(msg)
+    #print(msg)
+    return votes[0], isAllSame
     
 def getAllVotes(servers):
     votes = []
@@ -35,16 +36,16 @@ def getAllVotes(servers):
         votes.append(server.calculateVoteResult())
     return votes
 
-def makeServersAndClients():
+def makeServersAndClients(s,c):
     # Create clients
     clients = []
-    for i in range(numOfClients):
+    for i in range(c):
         vote = 1 if (i % 2 == 0) else 0 # 1 for even, 0 for odd
-        clients.append(Client(vote, numOfServers))
+        clients.append(Client(vote, s))
 
     # Create servers
     servers = []
-    for i in range(numOfServers):
+    for i in range(s):
         servers.append(Server())
     
     return clients, servers
@@ -71,4 +72,4 @@ def shareS(servers):
         for j in range(len(servers)):
             servers[i].receiveS(servers[j].ownS)
 
-setUp()
+#setUp(numOfServers, numOfClients)
