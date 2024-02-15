@@ -3,7 +3,7 @@ from server import Server
 import copy
 
 numOfServers = 3
-numOfClients = 3
+numOfClients = 20
 
 def setUp():
     # Create clients and servers

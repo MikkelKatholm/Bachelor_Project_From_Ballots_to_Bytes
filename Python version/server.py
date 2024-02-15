@@ -12,9 +12,9 @@ class Server:
 
     def calculateS(self):
         S = []
-        for i in range(len(self.shareOfSecret)):
+        for i in range(len(self.shareOfSecret[0])):
             sum = 0
-            for j in range(len(self.shareOfSecret[i])):
+            for j in range(len(self.shareOfSecret)):
                 sum += self.shareOfSecret[j][i]
             S.append(sum % self.P)
         self.ownS = S
