@@ -72,4 +72,4 @@ def shareS(servers):
         for j in range(len(servers)):
             servers[i].receiveS(servers[j].ownS)
 
-#setUp(numOfServers, numOfClients)
+setUp(numOfServers, numOfClients)

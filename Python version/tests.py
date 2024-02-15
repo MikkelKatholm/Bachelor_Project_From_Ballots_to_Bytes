@@ -39,10 +39,19 @@ def test_100S_100C():
     assert allAgree == True
 
 
+def test_10S_10C_Loop():
+    for i in range (1000):
+        result, allAgree = setUp(10,10)
+        assert result == 5
+        assert allAgree == True
+
+
+
 if __name__ == "__main__":
     test_2S_1C()
     test_5S_10C()
     test_10S_5C()
     test_10S_10C()
+    test_10S_10C_Loop()
     test_100S_100C()
     print("Everything passed: 👍")
