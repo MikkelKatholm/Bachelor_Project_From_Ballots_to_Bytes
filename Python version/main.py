@@ -7,7 +7,7 @@ numOfClients = 3
 
 def setUp(s,c):
     # Create clients and servers
-    clients, servers = makeServersAndClients(s,c)
+    servers, clients = makeServersAndClients(s,c)
 
     # Each client splits their secret
     splitVote(clients)
@@ -48,7 +48,7 @@ def makeServersAndClients(s,c):
     for i in range(s):
         servers.append(Server())
     
-    return clients, servers
+    return servers, clients
 
 def splitVote(clients):
     for c in clients:
