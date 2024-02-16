@@ -146,6 +146,8 @@ def test_error_correction_should_work_for_threshold():
 
     # Simulate a server cheats and sends a different S to others
     servers[0].ownS[1] = (servers[0].ownS[1] + 1) % p
+    servers[0].ownS[2] = (servers[0].ownS[2] + 1) % p
+    servers[0].ownS[3] = (servers[0].ownS[3] + 1) % p
     servers[1].ownS[2] = (servers[1].ownS[2] + 1) % p
     servers[2].ownS[3] = (servers[2].ownS[3] + 1) % p
 
@@ -154,9 +156,7 @@ def test_error_correction_should_work_for_threshold():
     votes, foundErrors = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
-    
-
-    assert votes[0] == 3
+    assert votes[0] == 4
     assert foundErrors == True
 
 
