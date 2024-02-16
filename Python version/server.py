@@ -21,8 +21,28 @@ class Server:
     
     def receiveS(self, S):
         self.S.append(S)
-            
+
+
+    def checkAllSAreSame(self):
+        # Check if all S_i are the same for all servers, ignore when S_i is 0
+        check = True
+        for i in range(len(self.S)):
+            checkArray = []
+            for j in range(len(self.S[i])):
+                if i != j:
+                    checkArray.append(self.S[j][i])
+            #Check if all elements in checkArray are the same
+            if not all(x == checkArray[0] for x in checkArray):
+                check = False
+                break
+
+        return check
+
+
     def calculateVoteResult(self):
+        check = self.checkAllSAreSame()
+        if not check:
+            return -1
         S = [0 for i in range(len(self.ownS))]
         for i in range(len(self.ownS)):
             for j in range(len(self.S)):

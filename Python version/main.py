@@ -3,7 +3,7 @@ from server import Server
 import copy
 
 numOfServers = 3
-numOfClients = 20
+numOfClients = 3
 
 def setUp(s,c):
     # Create clients and servers
@@ -25,10 +25,10 @@ def setUp(s,c):
     votes = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
-    isAllSame = all(x == votes[0] for x in votes)
-    msg = "All servers agree on: " + str(votes[0]) if isAllSame else "Servers disagree"
-    #print(msg)
-    return votes[0], isAllSame
+    isAllGood = True if votes[0] != -1 else False
+    msg = "All servers agree on: " + str(votes[0]) if isAllGood else "Something went wrong"
+    #   print(msg)
+    return votes[0], isAllGood
     
 def getAllVotes(servers):
     votes = []
