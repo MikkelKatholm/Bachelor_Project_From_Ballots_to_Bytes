@@ -16,7 +16,7 @@ class Client:
             numOfServers = self.numOfServers
             shareOfSecret = self.shareOfSecret
             p = self.P
-            for i in range(numOfServers-1):
+            for _ in range(numOfServers-1):
                   r = rd.randint(0, self.Z)
                   shareOfSecret.append(r)
                   preliminaryR -= r

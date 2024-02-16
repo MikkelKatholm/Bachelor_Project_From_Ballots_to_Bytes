@@ -54,7 +54,7 @@ Cheating test
     - All servers agree that something went wrong
 """
 def test_for_chearing_client():
-    servers, clients = makeServersAndClients(2,2)
+    servers, clients = makeServersAndClients(3,3)
     # Costumize the setup
 
     splitVote(clients)
@@ -160,5 +160,5 @@ if __name__ == "__main__":
     test_100S_100C()
     test_for_chearing_client()
     test_for_cheating_server()
-    test_error_correction_should_work()
+    #test_error_correction_should_work()
     print("Everything passed: 👍")

@@ -35,8 +35,9 @@ class Server:
             if not all(x == checkArray[0] for x in checkArray):
                 check = False
                 break
-            
+
         return check
+
 
     def correct_errors(self):
         for i in range(len(self.S)):
@@ -50,16 +51,11 @@ class Server:
 
 
     def calculateVoteResult(self):
-        self.correct_errors()
-        s = sum(self.ownS)
-        return s % self.P
-        
-        
-        #check = self.checkAllSAreSame()
-        #if not check:
-        #    return -1
-        #S = [0 for i in range(len(self.ownS))]
-        #for i in range(len(self.ownS)):
-        #    for j in range(len(self.S)):
-        #        S[i] = max(S[i], self.S[j][i])
-        #return sum(S) % self.P
+        check = self.checkAllSAreSame()    
+        if not check:
+            return -1
+        S = [0 for i in range(len(self.ownS))]
+        for i in range(len(self.ownS)):
+            for j in range(len(self.S)):
+                S[i] = max(S[i], self.S[j][i])
+        return sum(S) % self.P
