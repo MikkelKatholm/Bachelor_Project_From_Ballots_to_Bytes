@@ -2,41 +2,38 @@ from client import Client
 from server import Server
 from main import *
 
-noErrorsFound = "No errors in S."
-errorsFound = "Error in S, corrected by majority vote."
-
 
 def test_2S_1C():
-    result, msg = setUp(2,1)
+    result, foundErrors = setUp(2,1)
     assert result == 1
-    assert msg == noErrorsFound
+    assert foundErrors == False
 
 def test_5S_10C():
-    result, msg = setUp(5,10)
+    result, foundErrors = setUp(5,10)
     assert result == 5
-    assert msg == noErrorsFound
+    assert foundErrors == False
 
 def test_10S_5C():
-    result, msg = setUp(10,5)
+    result, foundErrors = setUp(10,5)
     assert result == 3
-    assert msg == noErrorsFound
+    assert foundErrors == False
 
 def test_10S_10C():
-    result, msg = setUp(10,10)
+    result, foundErrors = setUp(10,10)
     assert result == 5
-    assert msg == noErrorsFound
+    assert foundErrors == False
 
 def test_100S_100C():
-    result, msg = setUp(100,100)
+    result, foundErrors = setUp(100,100)
     assert result == 50
-    assert msg == noErrorsFound
+    assert foundErrors == False
 
 
 def test_10S_10C_Loop():
     for i in range (1000):
-        result, msg = setUp(10,10)
+        result, foundErrors = setUp(10,10)
         assert result == 5
-        assert msg == noErrorsFound
+        assert foundErrors == False
 
 
 """ 
@@ -61,12 +58,12 @@ def test_for_cheating_client():
 
     shareS(servers)
 
-    votes, msg = getAllVotes(servers)
+    votes, foundErrors = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers    
 
     assert votes[0] == 2
-    assert msg == errorsFound
+    assert foundErrors == True
 
 
 """ 
@@ -90,12 +87,12 @@ def test_for_cheating_server():
 
     shareS(servers)
 
-    votes, msg = getAllVotes(servers)
+    votes, foundErrors = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
     
     assert votes[0] == 2
-    assert msg == errorsFound
+    assert foundErrors == True
 
 
 """ 
@@ -122,13 +119,13 @@ def test_error_correction_should_work():
 
     shareS(servers)
 
-    votes, msg = getAllVotes(servers)
+    votes, foundErrors = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
     
 
     assert votes[0] == 3
-    assert msg == errorsFound
+    assert foundErrors == True
 
 
 

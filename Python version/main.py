@@ -22,24 +22,21 @@ def setUp(s,c):
     shareS(servers)
 
     # Each server calculates the vote result
-    votes, msg = getAllVotes(servers)
+    votes, foundErrors = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
 
-    return votes[0], msg
+    return votes[0], foundErrors
     
 def getAllVotes(servers):
     votes = []
-    msgs = []
+    errorDetected = False
     for server in servers:
-        vote, msg = server.calculateVoteResult()
+        vote, foundError = server.calculateVoteResult()
+        errorDetected = True if foundError else errorDetected
         votes.append(vote)
-        msgs.append(msg)
-    # if all msgs are the same, return the msg, else return errorsFound
-    if all(x == msgs[0] for x in msgs):
-        return votes, "No errors in S."
-    else:
-        return votes, "Error in S, corrected by majority vote."
+
+    return votes, errorDetected
     
 
 

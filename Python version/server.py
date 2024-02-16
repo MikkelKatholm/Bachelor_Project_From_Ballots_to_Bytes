@@ -50,15 +50,20 @@ class Server:
             self.ownS[i] = majority
 
 
+    """ 
+    Cheks if all S_i are the same for all servers
+    If not, correct the errors
+    Returns the vote result and a boolean indicating if errors were found 
+    """
     def calculateVoteResult(self):
         isAllGood = self.checkAllSAreSame()
         if not isAllGood:
             self.correct_errors()
             s = sum(self.ownS)
-            return s % self.P, "Error in S, corrected by majority vote."
+            return s % self.P, True
         else:
             S = [0 for i in range(len(self.ownS))]
             for i in range(len(self.ownS)):
                 for j in range(len(self.S)):
                     S[i] = max(S[i], self.S[j][i])
-            return sum(S) % self.P, "No errors in S."
+            return sum(S) % self.P, False
