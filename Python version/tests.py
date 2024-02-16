@@ -2,48 +2,41 @@ from client import Client
 from server import Server
 from main import *
 
-""" 
-Tests covered:
-    - More servers than clients
-    - More clients than servers
-    - Equal amount of servers and clients
-    - Minimum amount of servers and clients (2,1)
-"""
-
-
+noErrorsFound = "No errors in S."
+errorsFound = "Error in S, corrected by majority vote."
 
 
 def test_2S_1C():
-    result, allAgree = setUp(2,1)
+    result, msg = setUp(2,1)
     assert result == 1
-    assert allAgree == True
+    assert msg == noErrorsFound
 
 def test_5S_10C():
-    result, allAgree = setUp(5,10)
+    result, msg = setUp(5,10)
     assert result == 5
-    assert allAgree == True
+    assert msg == noErrorsFound
 
 def test_10S_5C():
-    result, allAgree = setUp(10,5)
+    result, msg = setUp(10,5)
     assert result == 3
-    assert allAgree == True
+    assert msg == noErrorsFound
 
 def test_10S_10C():
-    result, allAgree = setUp(10,10)
+    result, msg = setUp(10,10)
     assert result == 5
-    assert allAgree == True
+    assert msg == noErrorsFound
 
 def test_100S_100C():
-    result, allAgree = setUp(100,100)
+    result, msg = setUp(100,100)
     assert result == 50
-    assert allAgree == True
+    assert msg == noErrorsFound
 
 
 def test_10S_10C_Loop():
     for i in range (1000):
-        result, allAgree = setUp(10,10)
+        result, msg = setUp(10,10)
         assert result == 5
-        assert allAgree == True
+        assert msg == noErrorsFound
 
 
 """ 
@@ -53,7 +46,7 @@ Cheating test
     - Client 0 sends a different r_0_1 to server 0
     - All servers agree that something went wrong
 """
-def test_for_chearing_client():
+def test_for_cheating_client():
     servers, clients = makeServersAndClients(3,3)
     # Costumize the setup
 
@@ -68,15 +61,12 @@ def test_for_chearing_client():
 
     shareS(servers)
 
-    votes = getAllVotes(servers)
+    votes, msg = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers    
-    isAllGood = True if votes[0] != -1 else False
 
-    msg = "All servers agree on: " + str(votes[0]) if isAllGood else "Something went wrong"
-    assert msg == "Something went wrong"
-    assert isAllGood == False
-
+    assert votes[0] == 2
+    assert msg == errorsFound
 
 
 """ 
@@ -86,7 +76,7 @@ Cheating test
     - All servers agree that something went wrong
 """
 def test_for_cheating_server():
-    servers, clients = makeServersAndClients(3,3)
+    servers, clients = makeServersAndClients(5,4)
     # Costumize the setup
 
     splitVote(clients)
@@ -100,15 +90,12 @@ def test_for_cheating_server():
 
     shareS(servers)
 
-    votes = getAllVotes(servers)
+    votes, msg = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
     
-    isAllGood = True if votes[0] != -1 else False
-
-    msg = "All servers agree on: " + str(votes[0]) if isAllGood else "Something went wrong"
-    assert msg == "Something went wrong"
-    assert isAllGood == False
+    assert votes[0] == 2
+    assert msg == errorsFound
 
 
 """ 
@@ -133,21 +120,15 @@ def test_error_correction_should_work():
     servers[1].ownS[2] = (servers[1].ownS[2] + 1) % p
     servers[2].ownS[3] = (servers[2].ownS[3] + 1) % p
 
-    for i in range(10):
-        print(servers[i].ownS)
-    
-
     shareS(servers)
 
-    votes = getAllVotes(servers)
+    votes, msg = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
     
-    isAllGood = True if votes[0] != -1 else False
 
-    msg = "All servers agree on: " + str(votes[0]) if isAllGood else "Something went wrong"
-    assert msg == "All servers agree on: 3"
-    assert isAllGood == True
+    assert votes[0] == 3
+    assert msg == errorsFound
 
 
 
@@ -158,7 +139,7 @@ if __name__ == "__main__":
     test_10S_10C()
     test_10S_10C_Loop()
     test_100S_100C()
-    test_for_chearing_client()
+    test_for_cheating_client()
     test_for_cheating_server()
-    #test_error_correction_should_work()
+    test_error_correction_should_work()
     print("Everything passed: 👍")

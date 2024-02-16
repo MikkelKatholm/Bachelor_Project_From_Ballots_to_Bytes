@@ -51,11 +51,14 @@ class Server:
 
 
     def calculateVoteResult(self):
-        check = self.checkAllSAreSame()    
-        if not check:
-            return -1
-        S = [0 for i in range(len(self.ownS))]
-        for i in range(len(self.ownS)):
-            for j in range(len(self.S)):
-                S[i] = max(S[i], self.S[j][i])
-        return sum(S) % self.P
+        isAllGood = self.checkAllSAreSame()
+        if not isAllGood:
+            self.correct_errors()
+            s = sum(self.ownS)
+            return s % self.P, "Error in S, corrected by majority vote."
+        else:
+            S = [0 for i in range(len(self.ownS))]
+            for i in range(len(self.ownS)):
+                for j in range(len(self.S)):
+                    S[i] = max(S[i], self.S[j][i])
+            return sum(S) % self.P, "No errors in S."

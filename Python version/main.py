@@ -22,19 +22,26 @@ def setUp(s,c):
     shareS(servers)
 
     # Each server calculates the vote result
-    votes = getAllVotes(servers)
+    votes, msg = getAllVotes(servers)
 
     # Check if the vote result is the same for all servers
-    isAllGood = True if votes[0] != -1 else False
-    msg = "All servers agree on: " + str(votes[0]) if isAllGood else "Something went wrong"
-    #   print(msg)
-    return votes[0], isAllGood
+
+    return votes[0], msg
     
 def getAllVotes(servers):
     votes = []
+    msgs = []
     for server in servers:
-        votes.append(server.calculateVoteResult())
-    return votes
+        vote, msg = server.calculateVoteResult()
+        votes.append(vote)
+        msgs.append(msg)
+    # if all msgs are the same, return the msg, else return errorsFound
+    if all(x == msgs[0] for x in msgs):
+        return votes, "No errors in S."
+    else:
+        return votes, "Error in S, corrected by majority vote."
+    
+
 
 def makeServersAndClients(s,c):
     # Create clients
