@@ -45,6 +45,14 @@ def test_10S_10C_Loop():
         assert result == 5
         assert allAgree == True
 
+
+""" 
+Cheating test
+    - Simulate a client cheating and sends a different share to a server
+    - Client 0 sends r_0_1 to server 2
+    - Client 0 sends a different r_0_1 to server 0
+    - All servers agree that something went wrong
+"""
 def test_For_Cheaters():
     clients, servers = makeServersAndClients(3,3)
     # Costumize the setup
@@ -57,6 +65,10 @@ def test_For_Cheaters():
 
     # Simulate a client cheats and sends a different share to a server
     servers[0].shareOfSecret[0][1] = 3000
+    print("Server 0 ", servers[0].shareOfSecret)
+    print("Server 1 ", servers[1].shareOfSecret)
+    print("Server 2 ", servers[2].shareOfSecret)
+
 
     serverCalculateS(servers)
     shareS(servers)
