@@ -32,10 +32,9 @@ class Server:
                 if i != j:
                     checkArray.append(self.S[j][i])
             #Check if all elements in checkArray are the same
+            self.ownS[i] = max(set(checkArray), key = checkArray.count)
             if not all(x == checkArray[0] for x in checkArray):
                 check = False
-                break
-
         return check
 
 
@@ -57,13 +56,9 @@ class Server:
     """
     def calculateVoteResult(self):
         isAllGood = self.checkAllSAreSame()
+        foundErrors = False
         if not isAllGood:
             self.correct_errors()
-            s = sum(self.ownS)
-            return s % self.P, True
-        else:
-            S = [0 for i in range(len(self.ownS))]
-            for i in range(len(self.ownS)):
-                for j in range(len(self.S)):
-                    S[i] = max(S[i], self.S[j][i])
-            return sum(S) % self.P, False
+            foundErrors = True
+        s = sum(self.ownS)
+        return s % self.P, foundErrors
