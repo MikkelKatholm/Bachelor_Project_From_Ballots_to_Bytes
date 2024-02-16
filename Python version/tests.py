@@ -127,6 +127,38 @@ def test_error_correction_should_work():
     assert votes[0] == 3
     assert foundErrors == True
 
+""" 
+Error correction test
+    - 10 server
+    - 3 corupted servers
+    - 5 clients
+"""
+def test_error_correction_should_work_for_threshold():
+    servers, clients = makeServersAndClients(8,8)
+    # Costumize the setup
+    p = servers[0].P
+
+    splitVote(clients)
+
+    sendShares(clients, servers)
+
+    serverCalculateS(servers)
+
+    # Simulate a server cheats and sends a different S to others
+    servers[0].ownS[1] = (servers[0].ownS[1] + 1) % p
+    servers[1].ownS[2] = (servers[1].ownS[2] + 1) % p
+    servers[2].ownS[3] = (servers[2].ownS[3] + 1) % p
+
+    shareS(servers)
+
+    votes, foundErrors = getAllVotes(servers)
+
+    # Check if the vote result is the same for all servers
+    
+
+    assert votes[0] == 3
+    assert foundErrors == True
+
 
 
 if __name__ == "__main__":
@@ -139,4 +171,5 @@ if __name__ == "__main__":
     test_for_cheating_client()
     test_for_cheating_server()
     test_error_correction_should_work()
+    test_error_correction_should_work_for_threshold()
     print("Everything passed: 👍")
