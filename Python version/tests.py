@@ -142,7 +142,7 @@ def test_error_correction_should_work_for_threshold():
 
     sendShares(clients, servers)
 
-    serverCalculateS(servers)
+    serverCalculateS(servers) 
 
     # Simulate a server cheats and sends a different S to others
     servers[0].ownS[1] = (servers[0].ownS[1] + 1) % p
