@@ -1,4 +1,3 @@
-
 class Server:
     def __init__(self):
         self.P = 5081 # Some agreed upon prime number
