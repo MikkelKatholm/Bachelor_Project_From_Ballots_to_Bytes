@@ -18,7 +18,7 @@ def extended_euclid_gcd(a,b):
         return (a,1,0)
     else: 
         dp, xp, yp = extended_euclid_gcd(b, a % b)
-        d, x, y = dp, yp, xp - math.floor(a/b)*yp
+        d, x, y = dp, yp, xp - math.floor(a//b)*yp
         return d, x, y
     
 def divMod(num, den, fieldsize):
@@ -51,7 +51,7 @@ def split_secret(secret, n, t, fieldsize):
     if (n < t):
         raise ValueError("Threshold t must be larger than number of shares n")
     # Make polynomial of degree t-1, where f(0) = secret
-    coefficients = [secret] + [random.randrange(0,fieldsize) for _ in range(t-1)]
+    coefficients = [secret] + [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
     points = []
     for i in range(1, n+1):
         value = polynomialValueAtX(coefficients, i, fieldsize)
