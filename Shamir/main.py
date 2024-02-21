@@ -97,7 +97,5 @@ def main():
     shares = split_secret(secret, numOfShares, threshold, fieldsize)
 
     reconstructedSecret = reconstructSecret(shares[:3], threshold,fieldsize)
-
-    print(secret == reconstructedSecret)
+    assert secret == reconstructedSecret
     
-main()

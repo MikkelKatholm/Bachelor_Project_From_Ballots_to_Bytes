@@ -71,15 +71,15 @@ def test_All():
     assert secret == reconstructedSecret1 == reconstructedSecret2 
 
 def test_all_with_different_primes():
+
+    # Generate a list of primes
     startingPrime = 1619
     primes = [startingPrime]
-    nums = [2**i for i in range(12,54)]
-
+    nums = [2**i for i in range(12,100)]
     for i in range(len(nums)):
         workingPrime = nt.nextprime(nums[i] )
-    
         primes.append(workingPrime)
-    print(primes)
+
     for i in range(len(primes)):
         workingPrime = primes[i]
         secret = 1234
@@ -91,20 +91,30 @@ def test_all_with_different_primes():
         reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold, workingPrime)
         reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold, workingPrime)
 
-
-        print("\nPrime: ", workingPrime)
-        print("Reconstructed secret1: ", reconstructedSecret1)
-        print("Reconstructed secret2: ", reconstructedSecret2)
-        print("shares: ", shares)
-
-
         assert secret == reconstructedSecret1 == reconstructedSecret2 
 
+
+def test_One_Lies():
+    secret = 1234
+    numOfShares = 6
+    threshold = 3
+    fieldsize = 1613
+
+    shares = split_secret(secret, numOfShares, threshold,fieldsize)
+
+    shares[0] = (shares[0][0], shares[0][1] - 1)
+
+    reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold,fieldsize)
+    reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold,fieldsize)
+
+    assert secret != reconstructedSecret1
+    assert secret == reconstructedSecret2
 
 if __name__ == "__main__":
     test_extended_euclid_gcd_should_return_correct_result()
     test_split_secret()
     test_polynomialValueAtX()
     test_All()
+    test_One_Lies()
     test_all_with_different_primes()
     print("Everything passed: 👍")
