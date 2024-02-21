@@ -102,11 +102,12 @@ def test_One_Lies():
 
     shares = split_secret(secret, numOfShares, threshold,fieldsize)
 
+    # One share lies 
     shares[0] = (shares[0][0], shares[0][1] - 1)
 
     reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold,fieldsize)
     reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold,fieldsize)
-
+    print(reconstructedSecret1, reconstructedSecret2)
     assert secret != reconstructedSecret1
     assert secret == reconstructedSecret2
 

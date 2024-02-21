@@ -18,7 +18,7 @@ def extended_euclid_gcd(a,b):
         return (a,1,0)
     else: 
         dp, xp, yp = extended_euclid_gcd(b, a % b)
-        d, x, y = dp, yp, xp - math.floor(a//b)*yp
+        d, x, y = dp, yp, xp - (a//b)*yp
         return d, x, y
     
 def divMod(num, den, fieldsize):
