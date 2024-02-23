@@ -65,7 +65,7 @@ Given t datapoints, construct t basis polynomials
 def reconstructSecret(dataPoints, t, fieldsize):
     if len(dataPoints) < t:
         raise ValueError("Not enough data points to make basis polynomials")
-    x_points, y_points = zip(*dataPoints)    
+    x_points, y_points = zip(*dataPoints)
     res = 0
     for j in range(t):
         xj = x_points[j]
@@ -82,6 +82,51 @@ def reconstructSecret(dataPoints, t, fieldsize):
         res %= fieldsize
     return res 
 
+def lagrange_interpolate(x, datapoints, t, fieldsize):
+    if len(datapoints) < t:
+        raise ValueError("Not enough data points to interpolate")
+    x_points, y_points = zip(*datapoints)
+
+    k = len(x_points)
+    assert k == len(set(x_points)), "points must be distinct"
+
+    def product(vals):
+        acc = 1
+        for v in vals:
+            acc *= v
+        return acc
+    
+    denominators = []
+    numerators = []
+    for i in range(k):
+        restOfList = list(x_points)
+        working_x = restOfList.pop(i)
+        numsList = (x - o for o in restOfList)
+        densList = (working_x - o for o in restOfList)
+        numerators.append(product(numsList))
+        denominators.append(product(densList))
+    denominator = product(denominators)
+    numerator = 0
+    for i in range(k):
+        top = y_points[i] * (numerators[i] * denominator) % fieldsize
+        numerator += divMod(top , denominators[i], fieldsize)
+
+    resultAtX = (divMod(numerator, denominator, fieldsize) + fieldsize) % fieldsize
+    return resultAtX
+
+"""
+Detect errors given t data points by reconstructing polynomial and checking if the checkpoint  on the polynomial 
+"""
+def detectError(dataPoints, checkPoint, t, fieldsize):
+    x = checkPoint[0]
+    y = checkPoint[1]
+    y_reconstructed = lagrange_interpolate(x, dataPoints, t, fieldsize)
+
+    errorDetected = y_reconstructed != y
+    return errorDetected
+    
+
+
 # Secret, number of shares n, threshold t
 # 1) Split secret into shares: 
     # Make polynomial of degree t-1, where f(0) = secret
@@ -89,13 +134,15 @@ def reconstructSecret(dataPoints, t, fieldsize):
 # 2) Send shares 
 # 3) Reconstruct secret with Lagrange interpolation
 def main():
-    secret = 1234
+    secret = 1001
     numOfShares = 6
     threshold = 3
-    fieldsize = 1619
+    fieldsize = 1613
 
     shares = split_secret(secret, numOfShares, threshold, fieldsize)
 
-    reconstructedSecret = reconstructSecret(shares[:3], threshold,fieldsize)
-    assert secret == reconstructedSecret
+    reconstructedSecret = lagrange_interpolate(0, shares[:3], threshold, fieldsize)
+    print("Reconstructed secret: ", reconstructedSecret)
+
+    assert secret == reconstructedSecret, "Secrets do not match"
     

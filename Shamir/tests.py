@@ -107,9 +107,33 @@ def test_One_Lies():
 
     reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold,fieldsize)
     reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold,fieldsize)
-    print(reconstructedSecret1, reconstructedSecret2)
     assert secret != reconstructedSecret1
     assert secret == reconstructedSecret2
+
+def test_Detect_Errors():
+    secret = 1234
+    numOfShares = 6
+    threshold = 3
+    fieldsize = 1613
+
+    shares = split_secret(secret, numOfShares, threshold,fieldsize)
+
+    # One share lies 
+    shares[5] = (shares[5][0], shares[5][1] - 1)
+
+    checkPointError = shares[5]
+    checkPointHonest = shares[4]
+    # First 3 shares (are honest)
+    data = shares[:threshold]
+
+    # All shares are honest and the checkpoint is lying
+    foundErrors = detectError(data, checkPointError, threshold, fieldsize)
+
+    # All shares are honest and so is the checkpoint
+    foundErrors1 = detectError(data, checkPointHonest, threshold, fieldsize)
+
+    assert foundErrors == True
+    assert foundErrors1 == False
 
 if __name__ == "__main__":
     test_extended_euclid_gcd_should_return_correct_result()
@@ -117,5 +141,6 @@ if __name__ == "__main__":
     test_polynomialValueAtX()
     test_All()
     test_One_Lies()
+    test_Detect_Errors()
     test_all_with_different_primes()
     print("Everything passed: 👍")
