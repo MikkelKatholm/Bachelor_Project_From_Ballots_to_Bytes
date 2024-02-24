@@ -82,13 +82,15 @@ def reconstructSecret(dataPoints, t, fieldsize):
         res %= fieldsize
     return res 
 
+"""
+Given m data points and x, interpolate the polynomial and return f(x)
+"""
 def lagrange_interpolate(x, datapoints, t, fieldsize):
     if len(datapoints) < t:
         raise ValueError("Not enough data points to interpolate")
     x_points, y_points = zip(*datapoints)
 
-    k = len(x_points)
-    assert k == len(set(x_points)), "points must be distinct"
+    numOfPoints = len(x_points)
 
     def product(vals):
         acc = 1
@@ -98,7 +100,7 @@ def lagrange_interpolate(x, datapoints, t, fieldsize):
     
     denominators = []
     numerators = []
-    for i in range(k):
+    for i in range(numOfPoints):
         restOfList = list(x_points)
         working_x = restOfList.pop(i)
         numsList = (x - o for o in restOfList)
@@ -107,7 +109,7 @@ def lagrange_interpolate(x, datapoints, t, fieldsize):
         denominators.append(product(densList))
     denominator = product(denominators)
     numerator = 0
-    for i in range(k):
+    for i in range(numOfPoints):
         top = y_points[i] * (numerators[i] * denominator) % fieldsize
         numerator += divMod(top , denominators[i], fieldsize)
 
@@ -115,15 +117,14 @@ def lagrange_interpolate(x, datapoints, t, fieldsize):
     return resultAtX
 
 """
-Detect errors given t data points by reconstructing polynomial and checking if the checkpoint  on the polynomial 
+Detect errors given t data points by reconstructing polynomial and checking if the checkpoint on the polynomial 
 """
 def detectError(dataPoints, checkPoint, t, fieldsize):
     x = checkPoint[0]
     y = checkPoint[1]
     y_reconstructed = lagrange_interpolate(x, dataPoints, t, fieldsize)
 
-    errorDetected = y_reconstructed != y
-    return errorDetected
+    return y_reconstructed != y 
     
 
 
@@ -137,7 +138,7 @@ def main():
     secret = 1001
     numOfShares = 6
     threshold = 3
-    fieldsize = 1613
+    fieldsize = 2**127 - 1
 
     shares = split_secret(secret, numOfShares, threshold, fieldsize)
 
