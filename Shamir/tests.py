@@ -65,8 +65,8 @@ def test_All():
 
     shares = split_secret(secret, numOfShares, threshold,fieldsize)
 
-    reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], threshold,fieldsize)
-    reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], threshold,fieldsize)
+    reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold],  fieldsize)
+    reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], fieldsize)
 
     assert secret == reconstructedSecret1 == reconstructedSecret2 
 
@@ -88,8 +88,8 @@ def test_all_with_different_primes():
 
         shares = split_secret(secret, numOfShares, threshold, workingPrime)
 
-        reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], threshold, workingPrime)
-        reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], threshold, workingPrime)
+        reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], workingPrime)
+        reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], workingPrime)
 
         assert secret == reconstructedSecret1 == reconstructedSecret2 
 
@@ -105,8 +105,8 @@ def test_One_Lies():
     # One share lies 
     shares[0] = (shares[0][0], shares[0][1] - 1)
 
-    reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], threshold,fieldsize)
-    reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], threshold,fieldsize)
+    reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], fieldsize)
+    reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], fieldsize)
     assert secret != reconstructedSecret1
     assert secret == reconstructedSecret2
 
@@ -127,10 +127,10 @@ def test_Detect_Errors():
     data = shares[:threshold]
 
     # All shares are honest and the checkpoint is lying
-    foundErrors = detectError(data, checkPointError, threshold, fieldsize)
+    foundErrors = detectError(data, checkPointError, fieldsize)
 
     # All shares are honest and so is the checkpoint
-    foundErrors1 = detectError(data, checkPointHonest, threshold, fieldsize)
+    foundErrors1 = detectError(data, checkPointHonest, fieldsize)
 
     assert foundErrors == True
     assert foundErrors1 == False
@@ -155,28 +155,28 @@ def additiveTest():
 
 
     #Reconstruct the secret
-    reconstructedSecret = lagrange_interpolate(0, shares, threshold, fieldsize)
+    reconstructedSecret = lagrange_interpolate(0, shares, fieldsize)
     assert reconstructedSecret == 2
 
     #Recontruct the secret with only 2 shares from each secret
-    reconstructedSecret = lagrange_interpolate(0, shares[:2], threshold, fieldsize)
+    reconstructedSecret = lagrange_interpolate(0, shares[:2],  fieldsize)
     assert reconstructedSecret == 2
     
-def multipleSecrets():
-    secrets = [2,3]
-    threshold = 4
-    numOfShares = 10
-    fieldsize = 1613
 
-    shares = split_secret_At_Minus_1(secrets, numOfShares, threshold, fieldsize)
+"""
+To reconstruct we must use (numOfSecrets + threshold-1) shares
+"""
+def multipleSecrets():
+    secrets = [2,3,4,6,7]
+    threshold = 4
+    numOfShares = 16
+    fieldsize = 1613
+    sharedNeeded = len(secrets) + threshold - 1
+
+    shares = split_secrets(secrets, numOfShares, threshold, fieldsize)
     #Reconstruct the secrets
-    reconstructedSecrets = []
-    
-    for i in range(-len(secrets),3):
-        reconstructedSecret = lagrange_interpolate(i, shares[:numOfShares], threshold, fieldsize)
-        reconstructedSecrets.append(reconstructedSecret)
-        print(f"Reconstructed secret {i}: {reconstructedSecret}")
-    print("Reconstructed secrets: ", reconstructedSecrets)
+    reconstructedSecret = reconstruct_multiple_secrets(shares[:sharedNeeded], len(secrets), fieldsize)
+    assert reconstructedSecret == secrets
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import math
 import random
 
 
@@ -20,12 +19,13 @@ def extended_euclid_gcd(a,b):
         dp, xp, yp = extended_euclid_gcd(b, a % b)
         d, x, y = dp, yp, xp - (a//b)*yp
         return d, x, y
-    
+
 def divMod(num, den, fieldsize):
     d, x, _ = extended_euclid_gcd(den, fieldsize)
     if d != 1:
         raise ValueError("Denominator must be coprime to fieldsize")
     return (num * x)
+
 
 
 """
@@ -67,34 +67,34 @@ Secrets:    A list of secrets
 n:          Number of shares to make
 t:          Threshold
 fieldsize:  The big prime number to use for the finite field
-
-Make a polynomial of degree t-1, where f(-1) = secret and f(0) = 0
 """
-def split_secret_At_Minus_1(secrets, n, t, fieldsize):
+def split_secrets(secrets, n, t, fieldsize):
     if (n < t):
         raise ValueError("Threshold t must be larger than number of shares n")
     k = len(secrets)
 
-    points = []
+    pointsForPoly = []
+    pointsForShares = [ i for i in range(1+t,n+1+t) ]
     coefficients = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
     print("Coefficients: ", coefficients)
     
     # Make a list of points where (-len(secrets), f(-len(secrets))), (-len(secrets)+1, f(-len(secrets)+1)), ..., (0, f(0)
     for i in range(-k, 0+t-1):
-        points.append((i+1))
+        pointsForPoly.append((i+1))
 
     values = secrets + coefficients
-    print("Points: ", points)
-    print("Values: ", values)
+
+    polynomial = list(zip(pointsForPoly, values))
+
+    shares = [ (p,lagrange_interpolate(p, polynomial, fieldsize)) for p in pointsForShares]
+    return shares
 
 
 
 """
 Given m data points and x, interpolate the polynomial and return f(x)
 """
-def lagrange_interpolate(x, datapoints, t, fieldsize):
-    if len(datapoints) < t:
-        raise ValueError("Not enough data points to interpolate")
+def lagrange_interpolate(x, datapoints, fieldsize):
     x_points, y_points = zip(*datapoints)
 
     numOfPoints = len(x_points)
@@ -123,13 +123,24 @@ def lagrange_interpolate(x, datapoints, t, fieldsize):
     resultAtX = (divMod(numerator, denominator, fieldsize) + fieldsize) % fieldsize
     return resultAtX
 
+
+def reconstruct_multiple_secrets(shares, numOfSecrets, fieldsize):
+    # Make a list of points (-numOfSecrets+1, -numOfSecrets+2, ..., 0)
+    points = []
+    for i in range(-numOfSecrets+1,1):
+        points.append(i)
+
+    # Calculate the secrets encoded at the points
+    return [ lagrange_interpolate(p, shares, fieldsize) for p in points ]
+
+
 """
 Detect errors given t data points by reconstructing polynomial and checking if the checkpoint on the polynomial 
 """
-def detectError(dataPoints, checkPoint, t, fieldsize):
+def detectError(dataPoints, checkPoint, fieldsize):
     x = checkPoint[0]
     y = checkPoint[1]
-    y_reconstructed = lagrange_interpolate(x, dataPoints, t, fieldsize)
+    y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
 
     return y_reconstructed != y 
 
