@@ -42,6 +42,7 @@ def polynomialValueAtX(poly, x, fieldsize):
         value %= fieldsize
     return value
 
+
 """ 
 Secret is set to be f(0)
 n:  Number of shares to make
@@ -59,28 +60,34 @@ def split_secret(secret, n, t, fieldsize):
     
     return points
 
+
+
+""" 
+Secrets:    A list of secrets
+n:          Number of shares to make
+t:          Threshold
+fieldsize:  The big prime number to use for the finite field
+
+Make a polynomial of degree t-1, where f(-1) = secret and f(0) = 0
 """
-Given t datapoints, construct t basis polynomials
-"""
-def reconstructSecret(dataPoints, t, fieldsize):
-    if len(dataPoints) < t:
-        raise ValueError("Not enough data points to make basis polynomials")
-    x_points, y_points = zip(*dataPoints)
-    res = 0
-    for j in range(t):
-        xj = x_points[j]
-        temp = 1
-        for m in range(t):
-            if m != j:
-                xm = x_points[m]
-                divModRes = divMod(xm,xm-xj,fieldsize)
-                temp *= divModRes
-                temp %= fieldsize
-        temp *= y_points[j]
-        temp %= fieldsize
-        res += temp
-        res %= fieldsize
-    return res 
+def split_secret_At_Minus_1(secrets, n, t, fieldsize):
+    if (n < t):
+        raise ValueError("Threshold t must be larger than number of shares n")
+    k = len(secrets)
+
+    points = []
+    coefficients = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
+    print("Coefficients: ", coefficients)
+    
+    # Make a list of points where (-len(secrets), f(-len(secrets))), (-len(secrets)+1, f(-len(secrets)+1)), ..., (0, f(0)
+    for i in range(-k, 0+t-1):
+        points.append((i+1))
+
+    values = secrets + coefficients
+    print("Points: ", points)
+    print("Values: ", values)
+
+
 
 """
 Given m data points and x, interpolate the polynomial and return f(x)

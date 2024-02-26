@@ -55,7 +55,7 @@ def test_polynomialValueAtX():
         poly = [random.randint(0, fieldsize-1) for _ in range(10)]
         value = polynomialValueAtX(poly, x, fieldsize)
         assert value == polyAtX(poly,x , fieldsize)
-
+    
 
 def test_All():
     secret = 1234
@@ -65,8 +65,8 @@ def test_All():
 
     shares = split_secret(secret, numOfShares, threshold,fieldsize)
 
-    reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold,fieldsize)
-    reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold,fieldsize)
+    reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], threshold,fieldsize)
+    reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], threshold,fieldsize)
 
     assert secret == reconstructedSecret1 == reconstructedSecret2 
 
@@ -88,8 +88,8 @@ def test_all_with_different_primes():
 
         shares = split_secret(secret, numOfShares, threshold, workingPrime)
 
-        reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold, workingPrime)
-        reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold, workingPrime)
+        reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], threshold, workingPrime)
+        reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], threshold, workingPrime)
 
         assert secret == reconstructedSecret1 == reconstructedSecret2 
 
@@ -105,8 +105,8 @@ def test_One_Lies():
     # One share lies 
     shares[0] = (shares[0][0], shares[0][1] - 1)
 
-    reconstructedSecret1 = reconstructSecret(shares[:threshold], threshold,fieldsize)
-    reconstructedSecret2 = reconstructSecret(shares[-threshold:], threshold,fieldsize)
+    reconstructedSecret1 = lagrange_interpolate(0, shares[:threshold], threshold,fieldsize)
+    reconstructedSecret2 = lagrange_interpolate(0, shares[-threshold:], threshold,fieldsize)
     assert secret != reconstructedSecret1
     assert secret == reconstructedSecret2
 
@@ -152,20 +152,31 @@ def additiveTest():
     shares = []
     for i in range(3):
         shares.append((shares1[i][0], (shares1[i][1] + shares2[i][1] + shares3[i][1]) % fieldsize))
-        print("Share: ", i+1, ": ",shares1[i][1], " + ", shares2[i][1], " + ", shares3[i][1], " = ", shares[i][1]) 
-        print(shares[i])
-    
-    print("Shares: ", shares)
+
 
     #Reconstruct the secret
     reconstructedSecret = lagrange_interpolate(0, shares, threshold, fieldsize)
-    print("Reconstructed secret: ", reconstructedSecret)
     assert reconstructedSecret == 2
 
     #Recontruct the secret with only 2 shares from each secret
     reconstructedSecret = lagrange_interpolate(0, shares[:2], threshold, fieldsize)
     assert reconstructedSecret == 2
     
+def multipleSecrets():
+    secrets = [2,3]
+    threshold = 4
+    numOfShares = 10
+    fieldsize = 1613
+
+    shares = split_secret_At_Minus_1(secrets, numOfShares, threshold, fieldsize)
+    #Reconstruct the secrets
+    reconstructedSecrets = []
+    
+    for i in range(-len(secrets),3):
+        reconstructedSecret = lagrange_interpolate(i, shares[:numOfShares], threshold, fieldsize)
+        reconstructedSecrets.append(reconstructedSecret)
+        print(f"Reconstructed secret {i}: {reconstructedSecret}")
+    print("Reconstructed secrets: ", reconstructedSecrets)
 
 
 if __name__ == "__main__":
@@ -177,4 +188,5 @@ if __name__ == "__main__":
     test_Detect_Errors()
     test_all_with_different_primes()
     additiveTest()
+    multipleSecrets()
     print("Everything passed: 👍")
