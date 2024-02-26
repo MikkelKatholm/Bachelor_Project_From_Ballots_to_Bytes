@@ -125,8 +125,6 @@ def detectError(dataPoints, checkPoint, t, fieldsize):
     y_reconstructed = lagrange_interpolate(x, dataPoints, t, fieldsize)
 
     return y_reconstructed != y 
-    
-
 
 # Secret, number of shares n, threshold t
 # 1) Split secret into shares: 

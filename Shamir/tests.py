@@ -135,6 +135,39 @@ def test_Detect_Errors():
     assert foundErrors == True
     assert foundErrors1 == False
 
+def additiveTest():
+    secret1 = 1
+    secret2 = 1
+    secret3 = 0
+    threshold = 2
+    numOfShares = 3
+    fieldsize = 1613
+
+    #Contruct the shares for each secret
+    shares1 = split_secret(secret1, numOfShares, threshold, fieldsize)
+    shares2 = split_secret(secret2, numOfShares, threshold, fieldsize)
+    shares3 = split_secret(secret3, numOfShares, threshold, fieldsize)
+
+    #Add the shares together
+    shares = []
+    for i in range(3):
+        shares.append((shares1[i][0], (shares1[i][1] + shares2[i][1] + shares3[i][1]) % fieldsize))
+        print("Share: ", i+1, ": ",shares1[i][1], " + ", shares2[i][1], " + ", shares3[i][1], " = ", shares[i][1]) 
+        print(shares[i])
+    
+    print("Shares: ", shares)
+
+    #Reconstruct the secret
+    reconstructedSecret = lagrange_interpolate(0, shares, threshold, fieldsize)
+    print("Reconstructed secret: ", reconstructedSecret)
+    assert reconstructedSecret == 2
+
+    #Recontruct the secret with only 2 shares from each secret
+    reconstructedSecret = lagrange_interpolate(0, shares[:2], threshold, fieldsize)
+    assert reconstructedSecret == 2
+    
+
+
 if __name__ == "__main__":
     test_extended_euclid_gcd_should_return_correct_result()
     test_split_secret()
@@ -143,4 +176,5 @@ if __name__ == "__main__":
     test_One_Lies()
     test_Detect_Errors()
     test_all_with_different_primes()
+    additiveTest()
     print("Everything passed: 👍")
