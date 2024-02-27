@@ -123,7 +123,10 @@ def lagrange_interpolate(x, datapoints, fieldsize):
     resultAtX = (divMod(numerator, denominator, fieldsize) + fieldsize) % fieldsize
     return resultAtX
 
-
+"""  
+Reconstructs multiple secrets given m data points where:
+    secret1 is at x = -numOfSecrets+1, secret2 is at x = -numOfSecrets+2, ..., secretN is at x = 0
+"""
 def reconstruct_multiple_secrets(shares, numOfSecrets, fieldsize):
     # Make a list of points (-numOfSecrets+1, -numOfSecrets+2, ..., 0)
     points = []
