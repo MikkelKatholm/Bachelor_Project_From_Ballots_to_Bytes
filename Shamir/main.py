@@ -1,5 +1,5 @@
 import random
-
+from functools import reduce
 
 """ 
 Extended Euclid gcd
@@ -20,45 +20,11 @@ def extended_euclid_gcd(a,b):
         d, x, y = dp, yp, xp - (a//b)*yp
         return d, x, y
 
-def divMod(num, den, fieldsize):
+def div_mod(num, den, fieldsize):
     d, x, _ = extended_euclid_gcd(den, fieldsize)
     if d != 1:
         raise ValueError("Denominator must be coprime to fieldsize")
     return (num * x)
-
-
-
-"""
-Returns data points (x, f(x)) for splitting up secret
-poly:   The polynomial to evaluate at and split secret 
-x:      The point to evaluate at
-Tested: True
-"""
-def polynomialValueAtX(poly, x, fieldsize):
-    value = 0
-    for cof in reversed(poly):
-        value *= x
-        value += cof
-        value %= fieldsize
-    return value
-
-
-""" 
-Secret is set to be f(0)
-n:  Number of shares to make
-t:  Minimum amount of shares that must be pooled to reconstruct secret
-"""
-def split_secret(secret, n, t, fieldsize):
-    if (n < t):
-        raise ValueError("Threshold t must be larger than number of shares n")
-    # Make polynomial of degree t-1, where f(0) = secret
-    coefficients = [secret] + [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
-    points = []
-    for i in range(1, n+1):
-        value = polynomialValueAtX(coefficients, i, fieldsize)
-        points.append((i, value))
-    
-    return points
 
 
 
@@ -76,7 +42,6 @@ def split_secrets(secrets, n, t, fieldsize):
     pointsForPoly = []
     pointsForShares = [ i for i in range(1+t,n+1+t) ]
     coefficients = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
-    print("Coefficients: ", coefficients)
     
     # Make a list of points where (-len(secrets), f(-len(secrets))), (-len(secrets)+1, f(-len(secrets)+1)), ..., (0, f(0)
     for i in range(-k, 0+t-1):
@@ -96,14 +61,10 @@ Given m data points and x, interpolate the polynomial and return f(x)
 """
 def lagrange_interpolate(x, datapoints, fieldsize):
     x_points, y_points = zip(*datapoints)
-
     numOfPoints = len(x_points)
 
-    def product(vals):
-        acc = 1
-        for v in vals:
-            acc *= v
-        return acc
+    # Calculate the product of a list of numbers
+    product = lambda vals: reduce(lambda acc, v: acc * v, vals, 1)
     
     denominators = []
     numerators = []
@@ -118,16 +79,16 @@ def lagrange_interpolate(x, datapoints, fieldsize):
     numerator = 0
     for i in range(numOfPoints):
         top = y_points[i] * (numerators[i] * denominator) % fieldsize
-        numerator += divMod(top , denominators[i], fieldsize)
+        numerator += div_mod(top , denominators[i], fieldsize)
 
-    resultAtX = (divMod(numerator, denominator, fieldsize) + fieldsize) % fieldsize
+    resultAtX = (div_mod(numerator, denominator, fieldsize) + fieldsize) % fieldsize
     return resultAtX
 
 """  
 Reconstructs multiple secrets given m data points where:
     secret1 is at x = -numOfSecrets+1, secret2 is at x = -numOfSecrets+2, ..., secretN is at x = 0
 """
-def reconstruct_multiple_secrets(shares, numOfSecrets, fieldsize):
+def reconstruct_secrets(shares, numOfSecrets, fieldsize):
     # Make a list of points (-numOfSecrets+1, -numOfSecrets+2, ..., 0)
     points = []
     for i in range(-numOfSecrets+1,1):
@@ -140,29 +101,10 @@ def reconstruct_multiple_secrets(shares, numOfSecrets, fieldsize):
 """
 Detect errors given t data points by reconstructing polynomial and checking if the checkpoint on the polynomial 
 """
-def detectError(dataPoints, checkPoint, fieldsize):
+def detect_error(dataPoints, checkPoint, fieldsize):
     x = checkPoint[0]
     y = checkPoint[1]
     y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
 
     return y_reconstructed != y 
 
-# Secret, number of shares n, threshold t
-# 1) Split secret into shares: 
-    # Make polynomial of degree t-1, where f(0) = secret
-    # Make n data points (x, f(x)), with x = 1, 2, ..., n
-# 2) Send shares 
-# 3) Reconstruct secret with Lagrange interpolation
-def main():
-    secret = 1001
-    numOfShares = 6
-    threshold = 3
-    fieldsize = 2**127 - 1
-
-    shares = split_secret(secret, numOfShares, threshold, fieldsize)
-
-    reconstructedSecret = lagrange_interpolate(0, shares[:3], threshold, fieldsize)
-    print("Reconstructed secret: ", reconstructedSecret)
-
-    assert secret == reconstructedSecret, "Secrets do not match"
-    
