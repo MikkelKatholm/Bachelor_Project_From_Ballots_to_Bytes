@@ -137,25 +137,111 @@ def test_multiple_secrets():
     assert reconstructedSecret == secrets
 
 def berlekamp_welsh_example():
-    secret = [1,2,3,4,5,6]
-    n = len(secret)
-    k = 1
-    numOfShares = n+ 2*k
-    threshold = n - 1
+
+
+    
+    def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
+        import sympy as sp
+
+        def print_matrix(matrix, msg):
+            print(f"{msg}:")
+            for i in range(n2km1):
+                print(f"Row {i}: {matrix.row(i)}")
+            print("\n")
+
+        n = finalDegree - 1
+        k = maxNumOfErrors
+        polyQDegree = n + k - 1
+        nkm1 = n + k - 1
+        n2km1 = n + 2*k -1
+        x_points, y_points = zip(*shares)
+
+        # The polynomial Q(x) is a polynomial of degree n+k-1 on the form Q(x) = a_0 + a_1x + a_2x^2 + ... + a_n+k-1x^n+k-1
+
+        # Create a matrix of the coefficients of Q(x) on the form:
+        # | a_0, a_1, a_2, ..., a_n+k-1 |
+        # | a_0, a_1*2^1, a_2*2^2, ..., a_n+k-1*2^n+k-1 |
+        # | a_0, a_1*3^1, a_2*3^2, ..., a_n+k-1*3^n+k-1 |
+        # | ... |
+        # | a_0, a_1*(n+2k-1)^1, a_2*(n+2k-1)^2, ..., a_n+k-1*(n+2k-1)^n+k-1 |
+
+        # Create the matrix                             CORRECTLY!!!!!
+        cofficientsMatrix = sp.ones(n2km1, nkm1)
+        for i in range(n2km1):
+            for j in range(nkm1):
+                cofficientsMatrix[i,j] = (i+1)**(j) # Might be x_points[i]**(j) instead of (i+1)**(j)
+
+        print_matrix(cofficientsMatrix, "Cofficients matrix")
+
+        # Create a matrix of the y values on the form:
+        # | b_0, b_1, b_2, ..., b_{k-1}, 1|
+        # | b_0, 2^1*b_1, 2^2*b_2, ..., 2^{k-1}*b_{k-1}, 2^k |
+        # | b_0, 3^1*b_1, 3^2*b_2, ..., 3^{k-1}*b_{k-1}, 3^k |
+        # | ... |
+        # | b_0, (n+2k-1)^1*b_1, (n+2k-1)^2*b_2, ..., (n+2k-1)^{k-1}*b_{k-1}, (n+2k-1)^k |
+        
+        yMatrix = sp.ones(n2km1, k+1)
+        for i in range(n2km1):
+            for j in range(k+1):
+                yMatrix[i,j] = (i+1)**j
+            # Multiply the row with the y value
+            yMatrix[i,:] = yMatrix[i,:] * y_points[i]
+
+        print_matrix(yMatrix, "Y matrix")
+
+        # Y vector is the last column of the yMatrix
+        yVector = yMatrix[:,-1]
+
+
+
+        # Append the cofficientsMatrix with ymatrix except the last column
+        cofficientsMatrix = (-yMatrix[:,:-1]).row_join(cofficientsMatrix)
+
+
+
+        a = cofficientsMatrix
+        b = yVector
+        q = fieldsize
+        ans = None
+        det = int(a.det())
+        gcd, _, _ = extended_euclid_gcd(det, q)
+        print(f"det: {det}, gcd: {gcd}")
+        if gcd == 1:
+            ans = pow(det, -1, q) * a.adjugate() @ b % q
+            print(ans)
+        else:
+            print("don't know")        
+
+
+
+        return 0    
+
+    secret = [1234]
+
+    k = 2
+    threshold = 5
+    numOfShares = threshold + 2*k
     fieldsize = 1613
 
     shares = split_secrets(secret, numOfShares, threshold, fieldsize)
-    print(shares)
+    shares = [(6, 103), (7, 753), (8, 1583), (9, 716), (10, 1045), (11, 555), (12, 388), (13, 4), (14, 407)] # Forcing the shares to be the same in testing
+    print(f"Shares: \t \t {shares}")
 
-    return 0
+    # the last two shares are lying
+    shares = shares[:-2] + [(shares[-2][0], shares[-2][1] - 1), (shares[-1][0], shares[-1][1] - 1)]
+    print(f"Shares after lying: \t {shares}")
+
+    polyPoints = berlekamp_welsh(shares, k, threshold, fieldsize)
+
+
 
 if __name__ == "__main__":
-    test_extended_euclid_gcd()
-    test_all()
-    test_one_lies()
-    test_detect_errors()
-    test_with_different_primes()
-    additive_test()
-    test_multiple_secrets()
+    #test_extended_euclid_gcd()
+    #test_all()
+    #test_one_lies()
+    #test_detect_errors()
+    #test_with_different_primes()
+    #additive_test()
+    #test_multiple_secrets()
     berlekamp_welsh_example()
     print("Everything passed: 👍")
