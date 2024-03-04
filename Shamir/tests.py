@@ -136,6 +136,18 @@ def test_multiple_secrets():
     reconstructedSecret = reconstruct_secrets(shares[:sharedNeeded], len(secrets), fieldsize)
     assert reconstructedSecret == secrets
 
+def berlekamp_welsh_example():
+    secret = [1,2,3,4,5,6]
+    n = len(secret)
+    k = 1
+    numOfShares = n+ 2*k
+    threshold = n - 1
+    fieldsize = 1613
+
+    shares = split_secrets(secret, numOfShares, threshold, fieldsize)
+    print(shares)
+
+    return 0
 
 if __name__ == "__main__":
     test_extended_euclid_gcd()
@@ -145,4 +157,5 @@ if __name__ == "__main__":
     test_with_different_primes()
     additive_test()
     test_multiple_secrets()
+    berlekamp_welsh_example()
     print("Everything passed: 👍")
