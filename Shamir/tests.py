@@ -143,78 +143,70 @@ def berlekamp_welsh_example():
     def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
         import sympy as sp
 
-        def print_matrix(matrix, msg):
+        def mPrint(matrix, msg):
             print(f"{msg}:")
-            for i in range(n2km1):
-                print(f"Row {i}: {matrix.row(i)}")
+            n,m = matrix.shape
+            for i in range(n):
+                print(f"row {i}: {matrix.row(i)}")
             print("\n")
 
-        n = finalDegree - 1
-        k = maxNumOfErrors
-        polyQDegree = n + k - 1
-        nkm1 = n + k - 1
-        n2km1 = n + 2*k -1
-        x_points, y_points = zip(*shares)
+        k = maxNumOfErrors # 2
+        n = finalDegree # 5
+        nkm1 = n + k - 1 # 6
+        n2km1 = n + 2*k - 1 # 8
+        n2k = n + 2*k # 9
+        nk = n + k # 7
+        xp, yp = zip(*shares)
 
-        # The polynomial Q(x) is a polynomial of degree n+k-1 on the form Q(x) = a_0 + a_1x + a_2x^2 + ... + a_n+k-1x^n+k-1
+        # A matrix of size n2k x nk (rows x columns)
+        A = sp.zeros(n2k, nk)
+        for i in range(n2k):
+            for j in range(nk):
+                A[i,j] = (i+1)**j
 
-        # Create a matrix of the coefficients of Q(x) on the form:
-        # | a_0, a_1, a_2, ..., a_n+k-1 |
-        # | a_0, a_1*2^1, a_2*2^2, ..., a_n+k-1*2^n+k-1 |
-        # | a_0, a_1*3^1, a_2*3^2, ..., a_n+k-1*3^n+k-1 |
-        # | ... |
-        # | a_0, a_1*(n+2k-1)^1, a_2*(n+2k-1)^2, ..., a_n+k-1*(n+2k-1)^n+k-1 |
-
-        # Create the matrix                             CORRECTLY!!!!!
-        cofficientsMatrix = sp.ones(n2km1, nkm1)
-        for i in range(n2km1):
-            for j in range(nkm1):
-                cofficientsMatrix[i,j] = (i+1)**(j) # Might be x_points[i]**(j) instead of (i+1)**(j)
-
-        print_matrix(cofficientsMatrix, "Cofficients matrix")
-
-        # Create a matrix of the y values on the form:
-        # | b_0, b_1, b_2, ..., b_{k-1}, 1|
-        # | b_0, 2^1*b_1, 2^2*b_2, ..., 2^{k-1}*b_{k-1}, 2^k |
-        # | b_0, 3^1*b_1, 3^2*b_2, ..., 3^{k-1}*b_{k-1}, 3^k |
-        # | ... |
-        # | b_0, (n+2k-1)^1*b_1, (n+2k-1)^2*b_2, ..., (n+2k-1)^{k-1}*b_{k-1}, (n+2k-1)^k |
+        mPrint(A, "Coefficient matrix A")
         
-        yMatrix = sp.ones(n2km1, k+1)
-        for i in range(n2km1):
+        # b Matrix of size n2k x k+1 (rows x columns)
+        b = sp.zeros(n2k, k+1)
+        for i in range(n2k):
             for j in range(k+1):
-                yMatrix[i,j] = (i+1)**j
-            # Multiply the row with the y value
-            yMatrix[i,:] = yMatrix[i,:] * y_points[i]
+                b[i,j] = (i+1)**j
+            # Multiply yp[i] onto the i'th row
+            b[i,:] = b[i,:] * yp[i]
 
-        print_matrix(yMatrix, "Y matrix")
+        mPrint(b, "b")
 
-        # Y vector is the last column of the yMatrix
-        yVector = yMatrix[:,-1]
+        # Move the b matrix to the right hand side of the equation except for the last column
+        A = (-b[:,:-1]).row_join(A)
+        mPrint(A, "A after joining b")
 
+        # Delete everything but the last column of b
+        b = b[:,-1]
 
-
-        # Append the cofficientsMatrix with ymatrix except the last column
-        cofficientsMatrix = (-yMatrix[:,:-1]).row_join(cofficientsMatrix)
-
-
-
-        a = cofficientsMatrix
-        b = yVector
-        q = fieldsize
         ans = None
-        det = int(a.det())
-        gcd, _, _ = extended_euclid_gcd(det, q)
-        print(f"det: {det}, gcd: {gcd}")
+        det = int(A.det())
+        gcd, _, _ = extended_euclid_gcd(det, fieldsize)
         if gcd == 1:
-            ans = pow(det, -1, q) * a.adjugate() @ b % q
+            ans = pow(det, -1, fieldsize) * A.adjugate() @ b % fieldsize
             print(ans)
         else:
-            print("don't know")        
+            print("don't know")
 
+        # get first k elements of ans
+        bValues = ans[:k]
+        aValues = ans[k:]
 
+        # Error locator polynomial. E(x) = bValues[0] + bValues[1]x + ... + bValues[k-1]x^(k-1) + x^k
 
-        return 0    
+        # Q ploy. Q(x) = aValues[0] + aValues[1]x + ... + aValues[n+k-1]x^(n+k-1)
+
+        # P(x) = Q(x) / E(x)
+
+        # Return P(x)
+        p = div_mod(aValues, bValues, fieldsize)
+        print(p) 
+
+        return 0
 
     secret = [1234]
 
