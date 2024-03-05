@@ -138,8 +138,46 @@ def test_multiple_secrets():
 
 def berlekamp_welsh_example():
 
+    def normalize(poly):
+        while poly and poly[-1] == 0:
+            poly.pop()
+        if poly == []:
+            poly.append(0)
 
-    
+    def poly_divmod(num, den, fieldsize):
+        #Create normalized copies of the args
+        num = num[:]
+        normalize(num)
+        den = den[:]
+        normalize(den)
+
+        if len(num) >= len(den):
+            #Shift den towards right so it's the same degree as num
+            shiftlen = len(num) - len(den)
+            den = [0] * shiftlen + den
+        else:
+            return [0], num
+
+        quot = []
+        divisor = int(den[-1])
+        for i in range(shiftlen + 1):
+            #Get the next coefficient of the quotient.
+            mult = div_mod(num[-1], divisor, fieldsize)
+            quot = [mult] + quot
+
+            #Subtract mult * den from num, but don't bother if mult == 0
+            #Note that when i==0, mult!=0; so quot is automatically normalized.
+            if mult != 0:
+                d = [(mult * u) % fieldsize for u in den]
+                num = [(u - v) % fieldsize for u, v in zip(num, d)]
+
+            num.pop()
+            den.pop(0)
+
+        normalize(num)
+        return quot, num
+
+
     def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
         import sympy as sp
 
@@ -196,15 +234,21 @@ def berlekamp_welsh_example():
         bValues = ans[:k]
         aValues = ans[k:]
 
+        print(f"aValues: {aValues}")
+        print(f"bValues: {bValues}")
+
         # Error locator polynomial. E(x) = bValues[0] + bValues[1]x + ... + bValues[k-1]x^(k-1) + x^k
-
         # Q ploy. Q(x) = aValues[0] + aValues[1]x + ... + aValues[n+k-1]x^(n+k-1)
-
         # P(x) = Q(x) / E(x)
 
-        # Return P(x)
-        p = div_mod(aValues, bValues, fieldsize)
-        print(p) 
+        p, q = poly_divmod(aValues, bValues, fieldsize)
+
+        print(f"p: {p}")
+        print(f"q: {q}")
+
+        sec = reconstruct_secrets(zip(xp,p),1,fieldsize)
+
+        print(f"Secret: {sec}")
 
         return 0
 
