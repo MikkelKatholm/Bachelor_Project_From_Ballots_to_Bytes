@@ -137,57 +137,6 @@ def test_multiple_secrets():
     assert reconstructedSecret == secrets
 
 def berlekamp_welsh_example():
-
-    def normalize(poly):
-        while poly and poly[-1] == 0:
-            poly.pop()
-        if poly == []:
-            poly.append(0)
-
-    def poly_divmod(num, den, fieldsize):
-        #Create normalized copies of the args
-        num = num[:]
-        den = den[:]
-        normalize(num)
-        normalize(den)
-
-        print(f"num before normalizing: {num}")
-        print(f"den before normalizing: {den}")
-
-        if len(num) >= len(den):
-            #Shift den towards right so it's the same degree as num
-            shiftlen = len(num) - len(den)
-            den = [0] * shiftlen + den
-        else:
-            return [0], num
-
-
-        print(f"num after normalizing: {num}")
-        print(f"den after normalizing: {den}")
-
-        den = den[::-1]
-        print(f"den after reversing: {den}")
-
-        quot = []
-        divisor = int(den[-1])
-        for i in range(shiftlen + 1):
-            #Get the next coefficient of the quotient.
-            mult = div_mod(num[-1], divisor, fieldsize)
-            quot = [mult] + quot
-
-            #Subtract mult * den from num, but don't bother if mult == 0
-            #Note that when i==0, mult!=0; so quot is automatically normalized.
-            if mult != 0:
-                d = [(mult * u) % fieldsize for u in den]
-                num = [(u - v) % fieldsize for u, v in zip(num, d)]
-
-            num.pop()
-            den.pop(0)
-
-        normalize(num)
-        return quot, num
-
-
     def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
         import sympy as sp
 
@@ -208,7 +157,7 @@ def berlekamp_welsh_example():
 
         # A matrix of size n2k x nk (rows x columns)
         A = sp.zeros(n2k, nk)
-        for i in range(n2k):
+        for i in range(xp[0],n2k+xp[0]):
             for j in range(nk):
                 A[i,j] = (i+1)**j
 
@@ -254,10 +203,10 @@ def berlekamp_welsh_example():
         # Q ploy. Q(x) = aValues[0] + aValues[1]x + ... + aValues[n+k-1]x^(n+k-1)
         # P(x) = Q(x) / E(x)
 
-        p, q = poly_divmod(aValues, bValues, fieldsize)
-        print(f"p: {p}")
-        print(f"q: {q}")
-        print(f"xp: {xp}")
+        # Run legrange interpolation on the error locator polynomial
+
+        valuesFromErrorLocator = [lagrange_interpolate(xPoint, )]
+
         
         sec = reconstruct_secrets(zip(xp,p),1,fieldsize)
 
