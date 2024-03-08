@@ -93,6 +93,7 @@ def reconstruct_secrets(shares, numOfSecrets, fieldsize):
     points = []
     for i in range(-numOfSecrets+1,1):
         points.append(i)
+    print(f"points: {points}")
 
     # Calculate the secrets encoded at the points
     return [ lagrange_interpolate(p, shares, fieldsize) for p in points ]

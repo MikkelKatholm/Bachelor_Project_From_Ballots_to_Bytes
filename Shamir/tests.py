@@ -147,9 +147,12 @@ def berlekamp_welsh_example():
     def poly_divmod(num, den, fieldsize):
         #Create normalized copies of the args
         num = num[:]
-        normalize(num)
         den = den[:]
+        normalize(num)
         normalize(den)
+
+        print(f"num before normalizing: {num}")
+        print(f"den before normalizing: {den}")
 
         if len(num) >= len(den):
             #Shift den towards right so it's the same degree as num
@@ -157,6 +160,13 @@ def berlekamp_welsh_example():
             den = [0] * shiftlen + den
         else:
             return [0], num
+
+
+        print(f"num after normalizing: {num}")
+        print(f"den after normalizing: {den}")
+
+        den = den[::-1]
+        print(f"den after reversing: {den}")
 
         quot = []
         divisor = int(den[-1])
@@ -231,21 +241,24 @@ def berlekamp_welsh_example():
             print("don't know")
 
         # get first k elements of ans
-        bValues = ans[:k]
         aValues = ans[k:]
+        bValues = ans[:k]
+        bValues.insert(0,1)
 
         print(f"aValues: {aValues}")
         print(f"bValues: {bValues}")
+        print(f"len(aValues): {len(aValues)}")
+        print(f"len(bValues): {len(bValues)}")
 
         # Error locator polynomial. E(x) = bValues[0] + bValues[1]x + ... + bValues[k-1]x^(k-1) + x^k
         # Q ploy. Q(x) = aValues[0] + aValues[1]x + ... + aValues[n+k-1]x^(n+k-1)
         # P(x) = Q(x) / E(x)
 
         p, q = poly_divmod(aValues, bValues, fieldsize)
-
         print(f"p: {p}")
         print(f"q: {q}")
-
+        print(f"xp: {xp}")
+        
         sec = reconstruct_secrets(zip(xp,p),1,fieldsize)
 
         print(f"Secret: {sec}")
