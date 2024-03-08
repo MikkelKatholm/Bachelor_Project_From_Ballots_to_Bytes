@@ -50,7 +50,6 @@ def split_secrets(secrets, n, t, fieldsize):
     values = secrets + coefficients
 
     polynomial = list(zip(pointsForPoly, values))
-
     shares = [ (p,lagrange_interpolate(p, polynomial, fieldsize)) for p in pointsForShares]
     return shares
 
@@ -93,7 +92,7 @@ def reconstruct_secrets(shares, numOfSecrets, fieldsize):
     points = []
     for i in range(-numOfSecrets+1,1):
         points.append(i)
-    print(f"points: {points}")
+
 
     # Calculate the secrets encoded at the points
     return [ lagrange_interpolate(p, shares, fieldsize) for p in points ]
@@ -109,3 +108,58 @@ def detect_error(dataPoints, checkPoint, fieldsize):
 
     return y_reconstructed != y 
 
+def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
+    import sympy as sp
+    k = maxNumOfErrors 
+    n = finalDegree 
+    n2k = n + 2*k 
+    nk = n + k 
+    xp, yp = zip(*shares)
+    # A matrix of size n2k x nk (rows x columns)
+    A = sp.zeros(n2k, nk)
+    for i in range(n2k):
+        for j in range(nk):
+            A[i,j] = (xp[i])**j
+    
+    # Flip the matrix so the largest coefficients are first in each row
+    A = sp.Matrix(A[:,::-1])
+    # b Matrix of size n2k x k+1 (rows x columns)
+    b = sp.zeros(n2k, k+1)
+    for i in range(n2k):
+        for j in range(k+1):
+            b[i,j] = (xp[i])**j
+        # Multiply yp[i] onto the i'th row
+        b[i,:] = b[i,:] * yp[i]
+    # The first column is the constant, the rest are the coefficient of b
+    b = sp.Matrix(b[:,::-1])
+    
+    # Move the b matrix to the right hand side of the equation except for the firstcolumn
+    A = (-b[:,1:]).row_join(A)
+    # Delete everything but the first column of b (The constants)
+    b = b[:,0]
+    
+    # Solve the equation system
+    result = None
+    det = int(A.det())
+    gcd, _, _ = extended_euclid_gcd(det, fieldsize)
+    if gcd == 1:
+        result = pow(det, -1, fieldsize) * A.adjugate() @ b % fieldsize
+    else:
+        ValueError("Could not find solution")
+    # get first k elements of the result i.e. the b coefficents
+    bValues = result[:k]
+    # The first must always be 1!
+    bValues.insert(0,1)
+    # Evaluate the error polynomial and find the corrupted shares (they will equal 0)
+    errorCollection = []
+    for i in range(len(shares)):
+        x, r = shares[i]
+        result = 0
+        bLen = len(bValues)
+        for j in range(bLen):
+            result += x**(bLen-j-1) * bValues[j]
+        result = (result * r) % fieldsize
+        errorCollection.append(result == 0)
+    # Remove where there are errors
+    shares = [share for share, isError in zip(shares,errorCollection) if not isError]
+    return shares

@@ -137,109 +137,37 @@ def test_multiple_secrets():
     assert reconstructedSecret == secrets
 
 def berlekamp_welsh_example():
-    def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
-        import sympy as sp
-
-        def mPrint(matrix, msg):
-            print(f"{msg}:")
-            n,m = matrix.shape
-            for i in range(n):
-                print(f"row {i}: {matrix.row(i)}")
-            print("\n")
-
-        k = maxNumOfErrors # 2
-        n = finalDegree # 5
-        nkm1 = n + k - 1 # 6
-        n2km1 = n + 2*k - 1 # 8
-        n2k = n + 2*k # 9
-        nk = n + k # 7
-        xp, yp = zip(*shares)
-
-        # A matrix of size n2k x nk (rows x columns)
-        A = sp.zeros(n2k, nk)
-        for i in range(xp[0],n2k+xp[0]):
-            for j in range(nk):
-                A[i,j] = (i+1)**j
-
-        mPrint(A, "Coefficient matrix A")
-        
-        # b Matrix of size n2k x k+1 (rows x columns)
-        b = sp.zeros(n2k, k+1)
-        for i in range(n2k):
-            for j in range(k+1):
-                b[i,j] = (i+1)**j
-            # Multiply yp[i] onto the i'th row
-            b[i,:] = b[i,:] * yp[i]
-
-        mPrint(b, "b")
-
-        # Move the b matrix to the right hand side of the equation except for the last column
-        A = (-b[:,:-1]).row_join(A)
-        mPrint(A, "A after joining b")
-
-        # Delete everything but the last column of b
-        b = b[:,-1]
-
-        ans = None
-        det = int(A.det())
-        gcd, _, _ = extended_euclid_gcd(det, fieldsize)
-        if gcd == 1:
-            ans = pow(det, -1, fieldsize) * A.adjugate() @ b % fieldsize
-            print(ans)
-        else:
-            print("don't know")
-
-        # get first k elements of ans
-        aValues = ans[k:]
-        bValues = ans[:k]
-        bValues.insert(0,1)
-
-        print(f"aValues: {aValues}")
-        print(f"bValues: {bValues}")
-        print(f"len(aValues): {len(aValues)}")
-        print(f"len(bValues): {len(bValues)}")
-
-        # Error locator polynomial. E(x) = bValues[0] + bValues[1]x + ... + bValues[k-1]x^(k-1) + x^k
-        # Q ploy. Q(x) = aValues[0] + aValues[1]x + ... + aValues[n+k-1]x^(n+k-1)
-        # P(x) = Q(x) / E(x)
-
-        # Run legrange interpolation on the error locator polynomial
-
-        valuesFromErrorLocator = [lagrange_interpolate(xPoint, )]
-
-        
-        sec = reconstruct_secrets(zip(xp,p),1,fieldsize)
-
-        print(f"Secret: {sec}")
-
-        return 0
-
     secret = [1234]
-
+    numOfSecrets = len(secret)
     k = 2
     threshold = 5
-    numOfShares = threshold + 2*k
+    numOfShares = threshold + 2*k + numOfSecrets - 1
     fieldsize = 1613
 
     shares = split_secrets(secret, numOfShares, threshold, fieldsize)
-    shares = [(6, 103), (7, 753), (8, 1583), (9, 716), (10, 1045), (11, 555), (12, 388), (13, 4), (14, 407)] # Forcing the shares to be the same in testing
-    print(f"Shares: \t \t {shares}")
+
 
     # the last two shares are lying
     shares = shares[:-2] + [(shares[-2][0], shares[-2][1] - 1), (shares[-1][0], shares[-1][1] - 1)]
-    print(f"Shares after lying: \t {shares}")
 
-    polyPoints = berlekamp_welsh(shares, k, threshold, fieldsize)
+    # Remove corrupted share
+    shares = berlekamp_welsh(shares, k, threshold, fieldsize)
 
+    reconstructedSecrets = reconstruct_secrets(shares[:threshold], numOfSecrets, fieldsize)
+    reconstructedSecrets1 = reconstruct_secrets(shares[-threshold:], numOfSecrets, fieldsize)
+    
+    print(reconstructedSecrets)
+    print(reconstructedSecrets1)
+    assert reconstructedSecrets == secret == reconstructedSecrets1
 
 
 if __name__ == "__main__":
-    #test_extended_euclid_gcd()
-    #test_all()
-    #test_one_lies()
-    #test_detect_errors()
-    #test_with_different_primes()
-    #additive_test()
-    #test_multiple_secrets()
+    test_extended_euclid_gcd()
+    test_all()
+    test_one_lies()
+    test_detect_errors()
+    test_with_different_primes()
+    additive_test()
+    test_multiple_secrets()
     berlekamp_welsh_example()
     print("Everything passed: 👍")
