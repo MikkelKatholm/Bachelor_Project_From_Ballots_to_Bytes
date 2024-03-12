@@ -138,6 +138,8 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     # Delete everything but the first column of b (The constants)
     b = b[:,0]
     
+    print(A.shape)
+
     # Solve the equation system
     result = None
     det = int(A.det())
@@ -147,6 +149,7 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     else:
         ValueError("Could not find solution")
     # get first k elements of the result i.e. the b coefficents
+    print(result)
     bValues = result[:k]
     # The first must always be 1!
     bValues.insert(0,1)

@@ -137,10 +137,15 @@ def test_multiple_secrets():
     assert reconstructedSecret == secrets
 
 def berlekamp_welsh_example():
-    secret = [1234]
+    """
+        Does it only work for exactly numOfShares = threshold + 2*k???
+    """
+    secret = [1234,10, 20]
     numOfSecrets = len(secret)
     k = 2
-    threshold = 5
+    threshold = 5 
+    finalDegree = threshold + numOfSecrets - 1
+    sharedNeeded = threshold + numOfSecrets  - 1
     numOfShares = threshold + 2*k + numOfSecrets - 1
     fieldsize = 1613
 
@@ -151,10 +156,10 @@ def berlekamp_welsh_example():
     shares = shares[:-2] + [(shares[-2][0], shares[-2][1] - 1), (shares[-1][0], shares[-1][1] - 1)]
 
     # Remove corrupted share
-    shares = berlekamp_welsh(shares, k, threshold, fieldsize)
+    shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
 
-    reconstructedSecrets = reconstruct_secrets(shares[:threshold], numOfSecrets, fieldsize)
-    reconstructedSecrets1 = reconstruct_secrets(shares[-threshold:], numOfSecrets, fieldsize)
+    reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
+    reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
     
     print(reconstructedSecrets)
     print(reconstructedSecrets1)
