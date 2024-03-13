@@ -106,9 +106,17 @@ def detect_error(dataPoints, checkPoint, fieldsize):
     y = checkPoint[1]
     y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
 
+
     return y_reconstructed != y 
 
 def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
+
+    def mprint(msg, matrix):
+        print(msg)
+        for i in range(matrix.rows):
+            print(matrix.row(i))
+        print("\n")
+
     import sympy as sp
     k = maxNumOfErrors 
     n = finalDegree 
@@ -137,19 +145,19 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     A = (-b[:,1:]).row_join(A)
     # Delete everything but the first column of b (The constants)
     b = b[:,0]
-    
-    print(A.shape)
+
 
     # Solve the equation system
     result = None
     det = int(A.det())
     gcd, _, _ = extended_euclid_gcd(det, fieldsize)
+    print(f"det: {det}, gcd: {gcd}")
     if gcd == 1:
-        result = pow(det, -1, fieldsize) * A.adjugate() @ b % fieldsize
+        result = (pow(det, -1, fieldsize) * A.adjugate() @ b) % fieldsize
     else:
-        ValueError("Could not find solution")
+        raise ValueError("Could not find solution")
+    print(f"ResultWorks: {result}")
     # get first k elements of the result i.e. the b coefficents
-    print(result)
     bValues = result[:k]
     # The first must always be 1!
     bValues.insert(0,1)
