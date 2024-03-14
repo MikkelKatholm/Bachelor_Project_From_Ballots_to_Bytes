@@ -169,10 +169,10 @@ class TestExample1(unittest.TestCase):
 
         # the last two shares are lying
         shares = shares[:-2] + [(shares[-2][0], shares[-2][1] - 1), (shares[-1][0], shares[-1][1] - 1)]
-
         # Select 2k+threshold shares at random
         random.shuffle(shares)
-
+    
+        shares = [(6, 4), (11, 721), (12, 59), (7, 6), (14, 1100), (13, 801), (10, 403), (15, 323), (8, 4), (16, 412), (9, 698)]
         # Remove corrupted share
         shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
 

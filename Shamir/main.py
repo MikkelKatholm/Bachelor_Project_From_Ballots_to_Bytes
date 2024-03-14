@@ -146,12 +146,28 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     # Delete everything but the first column of b (The constants)
     b = b[:,0]
 
+    AA = A
+    bb = b
+    # Apply Gaussian elimination modulo p
+    A_mod_p = AA.applyfunc(lambda x: x % fieldsize)
+    b_mod_p = bb.applyfunc(lambda x: x % fieldsize)
+
+    # Augment the matrix A_mod_p with the constant vector b_mod_p
+    augmented_matrix_mod_p = A_mod_p.row_join(b_mod_p)
+
+    # Reduce the augmented matrix to row-echelon form
+    reduced_form_mod_p, pivot_columns = augmented_matrix_mod_p.rref()
+
+    # Extract the solution from the reduced form
+    solution_mod_p = reduced_form_mod_p[:, -1]
+
+    print(f"solution_mod_p: {solution_mod_p}")
+
 
     # Solve the equation system
     result = None
     det = int(A.det())
-    gcd, _, _ = extended_euclid_gcd(det, fieldsize)
-    print(f"det: {det}, gcd: {gcd}")
+    gcd, aaa, bbb = extended_euclid_gcd(det, fieldsize)
     if gcd == 1:
         result = (pow(det, -1, fieldsize) * A.adjugate() @ b) % fieldsize
     else:

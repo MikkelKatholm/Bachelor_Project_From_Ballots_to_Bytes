@@ -11,7 +11,7 @@ set /p commit_message="Enter your commit message: "
 
 :: Commit changes with the provided message or a default message if none is provided
 if "%commit_message%"=="" (
-  git commit -m "Update changes"
+  git commit -m "Shit not work"
 ) else (
   git commit -m "%commit_message%"
 )
