@@ -110,13 +110,6 @@ def detect_error(dataPoints, checkPoint, fieldsize):
     return y_reconstructed != y 
 
 def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
-
-    def mprint(msg, matrix):
-        print(msg)
-        for i in range(matrix.rows):
-            print(matrix.row(i))
-        print("\n")
-
     import sympy as sp
     k = maxNumOfErrors 
     n = finalDegree 
@@ -152,7 +145,6 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
 
     # Augment the matrix A_mod_p with the constant vector b_mod_p
     augmented_matrix_mod_p = A_mod_p.row_join(b_mod_p)
-
     # Reduce the augmented matrix to row-echelon form
     reduced_form_mod_p, _ = augmented_matrix_mod_p.rref()
 
@@ -172,7 +164,7 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     bValues.insert(0,1)
     # Evaluate the error polynomial and find the corrupted shares (they will equal 0)
     errorCollection = []
-    for i in range(len(shares)):
+    for i in range(n2k):
         x, r = shares[i]
         result = 0
         bLen = len(bValues)
@@ -180,6 +172,7 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
             result += x**(bLen-j-1) * bValues[j]
         result = (result * r) % fieldsize
         errorCollection.append(result == 0)
+
     # Remove where there are errors
     shares = [share for share, isError in zip(shares,errorCollection) if not isError]
     return shares

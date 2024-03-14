@@ -29,8 +29,8 @@ class TestExample1(unittest.TestCase):
 
         reconstructedSecret1 = reconstruct_secrets(shares[:threshold], 1, fieldsize)
         reconstructedSecret2 = reconstruct_secrets(shares[-threshold:], 1, fieldsize)
-        
-        self.assertEqual(secret, reconstructedSecret1, reconstructedSecret2) 
+        isSame = secret == reconstructedSecret1 == reconstructedSecret2
+        self.assertTrue(isSame)
 
     def test_more_shares_than_needed(self):
         secret = [1234]
@@ -42,8 +42,8 @@ class TestExample1(unittest.TestCase):
 
         reconstructedUsingThreshold = reconstruct_secrets(shares[:threshold], 1, fieldsize)
         reconstructedSecretALlSHares = reconstruct_secrets(shares, 1, fieldsize)
-        
-        self.assertEqual(secret, reconstructedUsingThreshold, reconstructedSecretALlSHares) 
+        isSame = secret == reconstructedUsingThreshold == reconstructedSecretALlSHares
+        self.assertTrue(isSame)
 
     def test_with_different_primes(self):
         # Generate a list of primes
@@ -65,7 +65,8 @@ class TestExample1(unittest.TestCase):
             reconstructedSecret1 = reconstruct_secrets(shares[:threshold], 1, workingPrime)
             reconstructedSecret2 = reconstruct_secrets(shares[-threshold:], 1, workingPrime)
 
-            self.assertEqual(secret, reconstructedSecret1, reconstructedSecret2) 
+            isSame = secret == reconstructedSecret1 == reconstructedSecret2
+            self.assertTrue(isSame)
 
 
     def test_one_lies(self):
@@ -151,7 +152,6 @@ class TestExample1(unittest.TestCase):
         reconstructedSecret = reconstruct_secrets(shares[:sharedNeeded], len(secrets), fieldsize)
         self.assertEqual(reconstructedSecret, secrets)
 
-    #@unittest.skip("Debugging")
     def test_berlekamp_welsh_k_lies(self):
         secret = [1234,10, 20]
         numOfSecrets = len(secret)
@@ -174,8 +174,8 @@ class TestExample1(unittest.TestCase):
 
         reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
         reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
-        print(reconstructedSecrets, secret, reconstructedSecrets1)
-        self.assertEqual(reconstructedSecrets, secret, reconstructedSecrets1)
+        isSame = secret == reconstructedSecrets == reconstructedSecrets1
+        self.assertTrue(isSame)
 
     def test_berlekamp_welsh_k_min_1_Lies(self):
         secret = [1234]
@@ -193,11 +193,12 @@ class TestExample1(unittest.TestCase):
         # Remove corrupted share
         shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
 
+
         reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
         reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
-        print(reconstructedSecrets, secret, reconstructedSecrets1)
-        self.assertEqual(reconstructedSecrets, secret, reconstructedSecrets1)
-
+        isSame = reconstructedSecrets == secret == reconstructedSecrets1 
+        self.assertTrue(isSame)
+        
 
     def test_berlekamp_welsh_no_Lies(self):
         secret = [1234]
@@ -216,8 +217,45 @@ class TestExample1(unittest.TestCase):
 
         reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
         reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
-        print(reconstructedSecrets, secret, reconstructedSecrets1)
-        self.assertEqual(reconstructedSecrets, secret, reconstructedSecrets1)
+        isSame = reconstructedSecrets == secret == reconstructedSecrets1
+        self.assertTrue(isSame)
+
+
+    def test_berlekamp_welsh_Loop(self):
+        random.seed(1)
+        # When the threshold is large the runtime is really long
+        # Reduced row echelon form is O(n^3)
+        for q in range(100):
+            print(f"Test {q}")
+            fieldsize = 1613
+            secret = [random.randint(1, fieldsize-1) for i in range(3)]
+            numOfSecrets = len(secret)
+            threshold = random.randint(3, 5)
+            k = random.randint(1, threshold-1)
+            finalDegree = threshold + numOfSecrets - 1
+            sharedNeeded = threshold + numOfSecrets  - 1
+            numOfShares = threshold + 2*k + numOfSecrets - 1 
+
+            shares = split_secrets(secret, numOfShares, threshold, fieldsize)
+
+            # the last k shares are lying
+            for i in range(k):
+                shares[-1-i] = (shares[-1-i][0], shares[-1-i][1] - 1)
+
+
+            # Select 2k+threshold shares at random
+            random.shuffle(shares)
+        
+            # Remove corrupted share
+            shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
+
+            reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
+            reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
+            isSame = secret == reconstructedSecrets == reconstructedSecrets1
+            self.assertTrue(isSame)
+
+
+
 
 def suite():
     loader = unittest.TestLoader()
