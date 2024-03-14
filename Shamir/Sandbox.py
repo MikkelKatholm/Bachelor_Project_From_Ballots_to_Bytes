@@ -1,24 +1,23 @@
 import numpy as np
-import galois
 
-# Define the finite field
-GF = galois.GF(5)  # For example, using GF(5) for finite field with 5 elements
-
-# Define the coefficient matrix and the constant vector
-A = GF([
-    [1, 2, 3],
-    [4, 3, 2],
-    [2, 0, 4]
+# Define the matrix A and vector b
+A = np.array([
+    [-24, -4, 1679616, 279936, 46656, 7776, 1296, 216, 36, 6, 1],
+    [-7931, -721, 214358881, 19487171, 1771561, 161051, 14641, 1331, 121, 11, 1],
+    [-708, -59, 429981696, 35831808, 2985984, 248832, 20736, 1728, 144, 12, 1],
+    [-42, -6, 5764801, 823543, 117649, 16807, 2401, 343, 49, 7, 1],
+    [-15400, -1100, 1475789056, 105413504, 7529536, 537824, 38416, 2744, 196, 14, 1],
+    [-10413, -801, 815730721, 62748517, 4826809, 371293, 28561, 2197, 169, 13, 1],
+    [-4030, -403, 100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10, 1],
+    [-4845, -323, 2562890625, 170859375, 11390625, 759375, 50625, 3375, 225, 15, 1],
+    [-32, -4, 16777216, 2097152, 262144, 32768, 4096, 512, 64, 8, 1],
+    [-6592, -412, 4294967296, 268435456, 16777216, 1048576, 65536, 4096, 256, 16, 1],
+    [-6282, -698, 43046721, 4782969, 531441, 59049, 6561, 729, 81, 9, 1]
 ])
-b = GF([3, 4, 1])
 
-# Concatenate A and b to form the augmented matrix
-augmented_matrix = np.concatenate((A, b[:, np.newaxis]), axis=1)
+b = np.array([144, 87241, 8496, 294, 215600, 135369, 40300, 72675, 256, 105472, 56538])
 
-# Perform row reduction to transform the matrix to row-echelon form
-row_echelon_form = galois.GF2Matrix(augmented_matrix).row_reduce()
+# Solve the system over the finite field with prime 1613
+solution = np.linalg.solve(A % 1613, b % 1613).astype(int)
 
-# Back-substitute to find the solutions
-solutions = galois.GF2Matrix.backsubstitute(row_echelon_form)
-
-print("Solutions:", solutions)
+print("Solution:", solution)

@@ -152,10 +152,7 @@ class TestExample1(unittest.TestCase):
         self.assertEqual(reconstructedSecret, secrets)
 
     #@unittest.skip("Debugging")
-    def test_berlekamp_welsh_example_k_lies(self):
-        """
-            Does it only work for exactly numOfShares = threshold + 2*k???
-        """
+    def test_berlekamp_welsh_k_lies(self):
         secret = [1234,10, 20]
         numOfSecrets = len(secret)
         k = 2
@@ -172,43 +169,71 @@ class TestExample1(unittest.TestCase):
         # Select 2k+threshold shares at random
         random.shuffle(shares)
     
-        shares = [(6, 4), (11, 721), (12, 59), (7, 6), (14, 1100), (13, 801), (10, 403), (15, 323), (8, 4), (16, 412), (9, 698)]
         # Remove corrupted share
         shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
 
         reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
         reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
-
+        print(reconstructedSecrets, secret, reconstructedSecrets1)
         self.assertEqual(reconstructedSecrets, secret, reconstructedSecrets1)
 
-    @unittest.skip("Shit not work")
-    def test_berlekamp_welsh_example_k_min_1_lies(self):
-        """
-            Does it work when there are no lies?
-        """
+    def test_berlekamp_welsh_k_min_1_Lies(self):
         secret = [1234]
         numOfSecrets = len(secret)
         k = 2
         threshold = 2
         finalDegree = threshold + numOfSecrets - 1
         sharedNeeded = threshold + numOfSecrets  - 1
-        numOfShares = threshold + 2*k + numOfSecrets - 1 
+        numOfShares = threshold + 2*k + numOfSecrets - 1 + 10
         fieldsize = 1613
 
         shares = split_secrets(secret, numOfShares, threshold, fieldsize)
-        #shares = shares[:-1]+[(shares[-1][0], shares[-1][1] - 1)]
-        print(shares)
+        shares = shares[:-1]+[(shares[-1][0], shares[-1][1] - 1)]
+
         # Remove corrupted share
         shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
 
         reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
         reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
-        
-        print(reconstructedSecrets)
-        print(reconstructedSecrets1)
+        print(reconstructedSecrets, secret, reconstructedSecrets1)
         self.assertEqual(reconstructedSecrets, secret, reconstructedSecrets1)
 
 
+    def test_berlekamp_welsh_no_Lies(self):
+        secret = [1234]
+        numOfSecrets = len(secret)
+        k = 2
+        threshold = 2
+        finalDegree = threshold + numOfSecrets - 1
+        sharedNeeded = threshold + numOfSecrets  - 1
+        numOfShares = threshold + 2*k + numOfSecrets - 1
+        fieldsize = 1613
+
+        shares = split_secrets(secret, numOfShares, threshold, fieldsize)
+
+        # Remove corrupted share
+        shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
+
+        reconstructedSecrets = reconstruct_secrets(shares[:sharedNeeded], numOfSecrets, fieldsize)
+        reconstructedSecrets1 = reconstruct_secrets(shares[-sharedNeeded:], numOfSecrets, fieldsize)
+        print(reconstructedSecrets, secret, reconstructedSecrets1)
+        self.assertEqual(reconstructedSecrets, secret, reconstructedSecrets1)
+
+def suite():
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    suite.addTest(loader.loadTestsFromTestCase(TestExample1))
+    return suite
 
 if __name__ == "__main__":
-    unittest.main()
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite())
+
+    # Format the "ok" messages in a straight line
+    print("\n")
+    print("Test ran: ", result.testsRun)
+    print("Errors: ", len(result.errors))
+    print("Failures: ", len(result.failures))
+    print("Skipped: ", len(result.skipped))
+    print("Success: ", result.wasSuccessful())
+    print("\n")
