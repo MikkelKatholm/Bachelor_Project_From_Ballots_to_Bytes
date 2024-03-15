@@ -222,11 +222,9 @@ class TestExample1(unittest.TestCase):
 
 
     def test_berlekamp_welsh_Loop(self):
-        random.seed(1)
         # When the threshold is large the runtime is really long
         # Reduced row echelon form is O(n^3)
-        for q in range(100):
-            print(f"Test {q}")
+        for _ in range(100):
             fieldsize = 1613
             secret = [random.randint(1, fieldsize-1) for i in range(3)]
             numOfSecrets = len(secret)
@@ -254,7 +252,48 @@ class TestExample1(unittest.TestCase):
             isSame = secret == reconstructedSecrets == reconstructedSecrets1
             self.assertTrue(isSame)
 
+    def test_additive_berlekamp_welsh(self):
+        secret1 = [1,1,5,4,1]
+        secret2 = [1,0,4,1,4]
+        secret3 = [0,5,4,3,1]
+        numOfSecrets = len(secret1)
+        finalVotes = [2,6,13,8,6]
+        threshold = 5
+        k = 5
+        sharesNeeded = threshold + numOfSecrets  - 1
+        finalDegree = threshold + numOfSecrets - 1
+        numOfShares = threshold + 2*k + numOfSecrets - 1 
+        fieldsize = 1613
 
+        #Contruct the shares for each secret
+        shares1 = split_secrets(secret1, numOfShares, threshold, fieldsize)
+        shares2 = split_secrets(secret2, numOfShares, threshold, fieldsize)
+        shares3 = split_secrets(secret3, numOfShares, threshold, fieldsize)
+
+        # Make the last k shares lie
+        for i in range(k):
+            shares1[-1-i] = (shares1[-1-i][0], shares1[-1-i][1] - 1)
+            shares2[-1-i] = (shares2[-1-i][0], shares2[-1-i][1] - 1)
+            shares3[-1-i] = (shares3[-1-i][0], shares3[-1-i][1] - 1)
+
+        #Add the shares together
+        shares = []
+        for i in range(numOfShares):
+            shares.append((shares1[i][0], (shares1[i][1] + shares2[i][1] + shares3[i][1]) % fieldsize))
+
+        # Shuffle the shares
+        random.shuffle(shares)
+
+        # Remove corrupted share
+        shares = berlekamp_welsh(shares, k, finalDegree, fieldsize)
+
+        #Reconstruct the secret
+        reconstructedSecret1 = reconstruct_secrets(shares, numOfSecrets, fieldsize)
+
+        #Recontruct the secret with only 2 shares from each secret
+        reconstructedSecret2 = reconstruct_secrets(shares[:sharesNeeded], numOfSecrets, fieldsize)
+        isSame = reconstructedSecret1 == finalVotes == reconstructedSecret2
+        self.assertTrue(isSame)
 
 
 def suite():

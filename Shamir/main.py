@@ -175,4 +175,8 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
 
     # Remove where there are errors
     shares = [share for share, isError in zip(shares,errorCollection) if not isError]
+
+    # Sort the shares by x (the first element in the tuple)
+    shares.sort(key=lambda x: x[0])
+
     return shares
