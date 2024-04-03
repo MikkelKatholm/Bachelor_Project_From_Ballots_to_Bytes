@@ -104,7 +104,7 @@ class TestExample1(unittest.TestCase):
         # All shares are honest and the checkpoint is lying
         foundErrors = detect_error(data, checkPointError, fieldsize)
 
-        # All shares are honest and so is the checkpoint
+        # All shares are honest and so is the checkpoint  
         foundErrors1 = detect_error(data, checkPointHonest, fieldsize)
 
         self.assertTrue(foundErrors)
