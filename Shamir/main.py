@@ -36,7 +36,7 @@ fieldsize:  The big prime number to use for the finite field
 """
 def split_secrets(secrets, n, t, fieldsize):
     if (n < t):
-        raise ValueError("Threshold t must be larger than number of shares n")
+        raise ValueError("number of shares n must be larger than threshold t")
     k = len(secrets)
 
     pointsForPoly = []
