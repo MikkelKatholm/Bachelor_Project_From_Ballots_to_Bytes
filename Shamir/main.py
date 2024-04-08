@@ -40,7 +40,7 @@ def split_secrets(secrets, n, t, fieldsize):
     k = len(secrets)
 
     pointsForPoly = []
-    pointsForShares = [ i for i in range(1+t,n+1+t) ]
+    pointsForShares = [ i for i in range(1,n+1) ]
     coefficients = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
     
     # Make a list of points where (-len(secrets), f(-len(secrets))), (-len(secrets)+1, f(-len(secrets)+1)), ..., (0, f(0)
@@ -85,30 +85,34 @@ def lagrange_interpolate(x, datapoints, fieldsize):
 
 """  
 Reconstructs multiple secrets given m data points where:
-    secret1 is at x = -numOfSecrets+1, secret2 is at x = -numOfSecrets+2, ..., secretN is at x = 0
+    secret1 is at x = -numOfSecrets+1
+    secret2 is at x = -numOfSecrets+2, 
+    .
+    .
+    .
+    secretN is at x = 0
 """
 def reconstruct_secrets(shares, numOfSecrets, fieldsize):
-    # Make a list of points (-numOfSecrets+1, -numOfSecrets+2, ..., 0)
-    points = []
-    for i in range(-numOfSecrets+1,1):
-        points.append(i)
-
+    # List of points where the secrets are encoded
+    points = [i for i in range(-numOfSecrets+1,1)]
 
     # Calculate the secrets encoded at the points
     return [ lagrange_interpolate(p, shares, fieldsize) for p in points ]
 
 
 """
-Detect errors given t data points by reconstructing polynomial and checking if the checkpoint on the polynomial 
+Check if the given data point is valid by reconstructing the polynomial and checking if the y value is the same
 """
 def detect_error(dataPoints, checkPoint, fieldsize):
     x = checkPoint[0]
     y = checkPoint[1]
     y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
 
-
     return y_reconstructed != y 
 
+"""
+Berlekamp-Welsh algorithm for error correction 
+"""
 def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     import sympy as sp
     k = maxNumOfErrors 
