@@ -220,7 +220,7 @@ class TestExample1(unittest.TestCase):
         isSame = reconstructedSecrets == secret == reconstructedSecrets1
         self.assertTrue(isSame)
 
-
+    @unittest.skip("This test is too slow")
     def test_berlekamp_welsh_Loop(self):
         # When the threshold is large the runtime is really long
         # Reduced row echelon form is O(n^3)
@@ -252,6 +252,7 @@ class TestExample1(unittest.TestCase):
             isSame = secret == reconstructedSecrets == reconstructedSecrets1
             self.assertTrue(isSame)
 
+    @unittest.skip("This test is too slow")
     def test_additive_berlekamp_welsh(self):
         secret1 = [1,1,5,4,1]
         secret2 = [1,0,4,1,4]

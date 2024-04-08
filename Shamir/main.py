@@ -1,3 +1,4 @@
+import sympy as sp
 import random
 from functools import reduce
 
@@ -48,7 +49,6 @@ def split_secrets(secrets, n, t, fieldsize):
         pointsForPoly.append((i+1))
 
     values = secrets + coefficients
-
     polynomial = list(zip(pointsForPoly, values))
     shares = [ (p,lagrange_interpolate(p, polynomial, fieldsize)) for p in pointsForShares]
     return shares
@@ -114,7 +114,6 @@ def detect_error(dataPoints, checkPoint, fieldsize):
 Berlekamp-Welsh algorithm for error correction 
 """
 def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
-    import sympy as sp
     k = maxNumOfErrors 
     n = finalDegree 
     n2k = n + 2*k 
@@ -184,3 +183,18 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     shares.sort(key=lambda x: x[0])
 
     return shares
+
+
+def get_Poly(dataPoints, threshold, fieldsize):
+    x = sp.symbols('x')
+
+    # trim the data points to the threshold
+    dataPoints = dataPoints[:(threshold)]
+
+    # Polynomial without a finite field
+    poly1 = sp.polys.polyfuncs.interpolate(dataPoints, x)
+
+    # Polynomial with a finite field
+    poly2 = sp.Poly(poly1, x, domain=sp.FiniteField(fieldsize))
+
+    return poly1, poly2
