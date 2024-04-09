@@ -174,7 +174,10 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
 
     return shares
 
-
+"""  
+find the polynomial that interpolates the data points and return the coefficients in order of the highest degree to the lowest
+f(x)= a**3*x + b**2*x + c*x + d becomes [a,b,c,d]
+"""
 def get_Poly(dataPoints, threshold, fieldsize):
     x = sp.symbols('x')
 
@@ -182,12 +185,17 @@ def get_Poly(dataPoints, threshold, fieldsize):
     dataPoints = dataPoints[:(threshold)]
 
     # Polynomial without a finite field
-    poly1 = sp.polys.polyfuncs.interpolate(dataPoints, x)
-
-    # Polynomial with a finite field
-    poly2 = sp.Poly(poly1, x, domain=sp.FiniteField(fieldsize))
-
-    return poly1, poly2
+    poly = sp.polys.polyfuncs.interpolate(dataPoints, x)
+    a = (str(poly).replace('- ', '-').replace('+ ', '+').split(' '))[::-1]
+    
+    for i in range(len(a)):
+        if i == 1:
+            a[i] = a[i].replace('*x', '')
+        else:
+            a[i] = a[i].replace("*x**" + str(i),'') 
+    a = a[::-1]
+    print(a)
+    return a
 
 def detect_error(points, threshold, fieldsize):
     def check_Point(dataPoints, checkPoint, fieldsize):

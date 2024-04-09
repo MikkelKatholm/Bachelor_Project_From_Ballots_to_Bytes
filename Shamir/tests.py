@@ -286,6 +286,17 @@ class TestExample1(unittest.TestCase):
         isSame = reconstructedSecret1 == finalVotes == reconstructedSecret2
         self.assertTrue(isSame)
 
+    def test_get_Poly(self):
+        for i in range(1000):
+            secret = [1234]
+            numOfShares = 6
+            threshold = 4
+            fieldsize = 1613
+
+            shares = split_secrets(secret, numOfShares, threshold,fieldsize)
+            get_Poly(shares, threshold, fieldsize)
+
+
 
 def suite():
     loader = unittest.TestLoader()
