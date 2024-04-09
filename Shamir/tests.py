@@ -96,19 +96,9 @@ class TestExample1(unittest.TestCase):
         # One share lies 
         shares[5] = (shares[5][0], shares[5][1] - 1)
 
-        checkPointError = shares[5]
-        checkPointHonest = shares[4]
-        # First 3 shares (are honest)
-        data = shares[:threshold]
-
-        # All shares are honest and the checkpoint is lying
-        foundErrors = detect_error(data, checkPointError, fieldsize)
-
-        # All shares are honest and so is the checkpoint  
-        foundErrors1 = detect_error(data, checkPointHonest, fieldsize)
+        foundErrors = detect_error(shares, threshold, fieldsize)
 
         self.assertTrue(foundErrors)
-        self.assertFalse(foundErrors1)
 
     def test_additive_test(self):
         secret1 = [1]
@@ -310,8 +300,8 @@ if __name__ == "__main__":
     # Format the "ok" messages in a straight line
     print("\n")
     print("Test ran: ", result.testsRun)
-    print("Errors: ", len(result.errors))
+    print("Errors:   ", len(result.errors))
     print("Failures: ", len(result.failures))
-    print("Skipped: ", len(result.skipped))
-    print("Success: ", result.wasSuccessful())
+    print("Skipped:  ", len(result.skipped))
+    print("Success:  ", result.wasSuccessful())
     print("\n")

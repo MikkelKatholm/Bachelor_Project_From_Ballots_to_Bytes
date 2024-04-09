@@ -101,16 +101,6 @@ def reconstruct_secrets(shares, numOfSecrets, fieldsize):
 
 
 """
-Check if the given data point is valid by reconstructing the polynomial and checking if the y value is the same
-"""
-def detect_error(dataPoints, checkPoint, fieldsize):
-    x = checkPoint[0]
-    y = checkPoint[1]
-    y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
-
-    return y_reconstructed != y 
-
-"""
 Berlekamp-Welsh algorithm for error correction 
 """
 def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
@@ -198,3 +188,21 @@ def get_Poly(dataPoints, threshold, fieldsize):
     poly2 = sp.Poly(poly1, x, domain=sp.FiniteField(fieldsize))
 
     return poly1, poly2
+
+def detect_error(points, threshold, fieldsize):
+    def check_Point(dataPoints, checkPoint, fieldsize):
+        x = checkPoint[0]
+        y = checkPoint[1]
+        y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
+        return y_reconstructed != y 
+    
+    if len(points) < threshold:
+        raise ValueError("Not enough points to interpolate")
+
+    polyPoints = points[:threshold]
+    checkPoints = points[threshold:]
+
+    for point in checkPoints:
+        if check_Point(polyPoints, point, fieldsize):
+            return True
+    return False

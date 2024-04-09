@@ -1,7 +1,11 @@
+import sys
+sys.path.append("../")
 import random
 import key_gen
 from main import *
 import unittest
+import Shamir.main as shamir
+
 
 
 # For all tests we use a 128 bit prime number unless otherwise specified in the test
