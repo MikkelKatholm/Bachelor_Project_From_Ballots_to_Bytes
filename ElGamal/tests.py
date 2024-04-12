@@ -16,8 +16,8 @@ class TestExample1(unittest.TestCase):
     def test_singleSecretTest(self):
         p, g, pk, sk = gen_keys(bits)
         m = 0 # Message to encrypt
-        c = encrypt(pk,m,p,g)
-        d = decrypt(sk,g,c,p,1)
+        c = encrypt_for_additive(pk,m,p,g)
+        d = decrypt_for_additive(sk,g,c,p,1)
 
         isSame = d == m
         self.assertTrue(isSame, "Decryption failed")
@@ -27,12 +27,12 @@ class TestExample1(unittest.TestCase):
         p, g, pk, sk = gen_keys(bits)
         m1 = 0 # Message to encrypt
         m2 = 1 # Message to encrypt
-        (c11, c12) = encrypt(pk,m1,p,g)
-        (c21, c22) = encrypt(pk,m2,p,g)
+        (c11, c12) = encrypt_for_additive(pk,m1,p,g)
+        (c21, c22) = encrypt_for_additive(pk,m2,p,g)
         
         c = (c11*c21, c12*c22)
 
-        d = decrypt(sk,g,c,p,2)
+        d = decrypt_for_additive(sk,g,c,p,2)
         isSame = d == (m1+m2)
         self.assertTrue(isSame, "Decryption failed")
 
@@ -45,17 +45,37 @@ class TestExample1(unittest.TestCase):
         for _ in range(voters):
             m = random.SystemRandom().randint(0,1)
             totalVote += m
-            c = encrypt(pk,m,p,g)
+            c = encrypt_for_additive(pk,m,p,g)
             c1 *= c[0]
             c2 *= c[1]
         c = (c1,c2)
 
-        print(f"totalVote: {totalVote}")
-        result = decrypt(sk,g,c,p, voters)
+
+        result = decrypt_for_additive(sk,g,c,p, voters)
 
         isSame = result == totalVote
         self.assertTrue(isSame, "Decryption failed")
 
+    def test_shamir(self):
+        bits = 16
+        #p, g, pk, sk = gen_keys(bits)
+        p, g, pk, sk = 54287, 7431, 7474, 3514
+
+        m1 = 1
+        keyHolders = 3
+        threshold = 2
+        shares = generate_key_shares(sk, keyHolders, threshold, p)
+        shares = [(1, 32146), (2, 6491), (3, 35123)]
+
+        c = encrypt_for_shamir(pk,m1,p,g)
+        c1, _ = c
+        dis = [calculate_di_for_shamir(c1, share, p) for share in shares]   # Correct, tested by hand
+
+        result = decrypt_for_shamir(dis, c, g, p)
+
+        isSame = result == m1
+        print(f"result: {result}")
+        self.assertTrue(isSame, "Decryption failed")
 
 
 def suite():

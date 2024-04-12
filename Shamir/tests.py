@@ -286,15 +286,23 @@ class TestExample1(unittest.TestCase):
         isSame = reconstructedSecret1 == finalVotes == reconstructedSecret2
         self.assertTrue(isSame)
 
-    def test_get_Poly(self):
-        for i in range(1000):
+    def test_reconstruction_with_shuffled_shares(self):
+        for _ in range(100):
             secret = [1234]
             numOfShares = 6
-            threshold = 4
+            threshold = 3
             fieldsize = 1613
 
             shares = split_secrets(secret, numOfShares, threshold,fieldsize)
-            get_Poly(shares, threshold, fieldsize)
+
+            # Shuffle the shares
+            random.shuffle(shares)
+
+            reconstructedSecret1 = reconstruct_secrets(shares[:threshold], 1, fieldsize)
+            reconstructedSecret2 = reconstruct_secrets(shares[-threshold:], 1, fieldsize)
+            isSame = secret == reconstructedSecret1 == reconstructedSecret2
+            self.assertTrue(isSame)
+
 
 
 

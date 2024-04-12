@@ -36,20 +36,22 @@ t:          Threshold
 fieldsize:  The big prime number to use for the finite field
 """
 def split_secrets(secrets, n, t, fieldsize):
+    if type(secrets) is int:
+        secrets = [secrets]
+
     if (n < t):
         raise ValueError("number of shares n must be larger than threshold t")
     k = len(secrets)
 
-    pointsForPoly = []
+
+    xValues = [i+1 for i in range(-k,t-1)]
     pointsForShares = [ i for i in range(1,n+1) ]
-    coefficients = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
+    pointsToIntercect = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
     
     # Make a list of points where (-len(secrets), f(-len(secrets))), (-len(secrets)+1, f(-len(secrets)+1)), ..., (0, f(0)
-    for i in range(-k, 0+t-1):
-        pointsForPoly.append((i+1))
 
-    values = secrets + coefficients
-    polynomial = list(zip(pointsForPoly, values))
+    values = secrets + pointsToIntercect
+    polynomial = list(zip(xValues, values))
     shares = [ (p,lagrange_interpolate(p, polynomial, fieldsize)) for p in pointsForShares]
     return shares
 
