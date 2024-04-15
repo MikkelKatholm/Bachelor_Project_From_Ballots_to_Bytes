@@ -57,21 +57,29 @@ class TestExample1(unittest.TestCase):
         self.assertTrue(isSame, "Decryption failed")
 
     def test_shamir(self):
-        bits = 16
+        #bits = 16
         #p, g, pk, sk = gen_keys(bits)
         p, g, pk, sk = 54287, 7431, 7474, 3514
+        print(f"p: {p}, g: {g}, pk: {pk}, sk: {sk}")
 
         m1 = 1
         keyHolders = 3
         threshold = 2
-        shares = generate_key_shares(sk, keyHolders, threshold, p)
-        shares = [(1, 32146), (2, 6491), (3, 35123)]
+        #shares = generate_key_shares(sk, keyHolders, threshold, p)
 
-        c = encrypt_for_shamir(pk,m1,p,g)
+        shares =  [(1, 31187), (2, 4573), (3, 32246)]
+        print(f"shares: {shares}")
+
+        #c = encrypt_for_shamir(pk,m1,p,g)
+        r = 6468
+        print(f"r: {r}")
+        c = (15383, 19286)
+        
         c1, _ = c
-        dis = [calculate_di_for_shamir(c1, share, p) for share in shares]   # Correct, tested by hand
-
-        result = decrypt_for_shamir(dis, c, g, p)
+        print(f"c: {c}")
+        dis = [(calculate_di_for_shamir(c1, share, p), share[0]) for share in shares]   # Correct, tested by hand
+        print(f"dis From test file: {dis}")
+        result = decrypt_for_shamir(dis, c, g, threshold, p)
 
         isSame = result == m1
         print(f"result: {result}")

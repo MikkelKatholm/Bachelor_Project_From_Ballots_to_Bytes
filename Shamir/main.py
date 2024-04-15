@@ -216,3 +216,13 @@ def detect_error(points, threshold, fieldsize):
         if check_Point(polyPoints, point, fieldsize):
             return True
     return False
+
+
+def lagrange_For_ElGamal(xPoints, index, threshold, fieldsize):
+    result = 1
+    for i in range(threshold):
+        if i == index:
+            continue
+        temp = div_mod(xPoints[i], xPoints[i] - xPoints[index], fieldsize)
+        result = (result * temp) % fieldsize
+    return result

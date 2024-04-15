@@ -303,8 +303,28 @@ class TestExample1(unittest.TestCase):
             isSame = secret == reconstructedSecret1 == reconstructedSecret2
             self.assertTrue(isSame)
 
+    def test_Lagrange_basis_for_ElGamal(self):
+        for i in range(100):
+            secret = 1234+i
+            numOfShares = 6
+            threshold = 3
+            fieldsize = 1613
+
+            shares = split_secrets([secret], numOfShares, threshold, fieldsize)
+            # Hardcode share for testing and debugging
+
+            xPoints, yPoints = zip(*shares)
+            basisPoly = [lagrange_For_ElGamal(xPoints, i, threshold, fieldsize) for i in range(threshold)]
 
 
+        
+
+            res = 0
+            for i in range(threshold):
+                res = (res + yPoints[i] * basisPoly[i]) % fieldsize
+            isSame = res == secret
+            self.assertTrue(isSame)
+            self.assertEqual(res, secret)
 
 def suite():
     loader = unittest.TestLoader()
