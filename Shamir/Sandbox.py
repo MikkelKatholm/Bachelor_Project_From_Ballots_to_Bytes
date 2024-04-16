@@ -59,8 +59,27 @@ def main():
     print(f"c1: {c1} \nc2: {c2}")
     print(decrypt(sk,g,c,p))
 
+import random
+import sympy
+
+def generate_large_safe_prime(bit_length):
+    while True:
+        # Generate a random prime number of desired length
+        prime_candidate = sympy.randprime(2**(bit_length-1), 2**bit_length)
+        
+        # Check if the prime candidate is safe
+        if sympy.isprime((prime_candidate - 1) // 2):
+            return prime_candidate
+
+def test_generate_large_safe_prime():
+    bit_length = 128  # Adjust the bit length as per your requirement
+    safe_prime = generate_large_safe_prime(bit_length)
+    print("Generated Safe Prime:", safe_prime)
+
+
 if __name__ == "__main__":
     # set the seed for the random number generator
     random.seed(0)
 
-    main()
+    #main()
+    test_generate_large_safe_prime()
