@@ -305,17 +305,18 @@ class TestExample1(unittest.TestCase):
 
     def test_Lagrange_basis_for_ElGamal(self):
         for i in range(100):
-            secret = 1234+i
-            numOfShares = 6
-            threshold = 3
-            fieldsize = 1613
+            secret = 3514+i
+            numOfShares = 3
+            threshold = 2
+            fieldsize = 54287
 
             shares = split_secrets([secret], numOfShares, threshold, fieldsize)
             # Hardcode share for testing and debugging
 
             xPoints, yPoints = zip(*shares)
+            print(f"xPoints: {xPoints}")
             basisPoly = [lagrange_For_ElGamal(xPoints, i, threshold, fieldsize) for i in range(threshold)]
-
+            print(f"basisPoly: {basisPoly}")
 
         
 
