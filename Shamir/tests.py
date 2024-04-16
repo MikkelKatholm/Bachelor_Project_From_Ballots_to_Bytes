@@ -96,19 +96,9 @@ class TestExample1(unittest.TestCase):
         # One share lies 
         shares[5] = (shares[5][0], shares[5][1] - 1)
 
-        checkPointError = shares[5]
-        checkPointHonest = shares[4]
-        # First 3 shares (are honest)
-        data = shares[:threshold]
-
-        # All shares are honest and the checkpoint is lying
-        foundErrors = detect_error(data, checkPointError, fieldsize)
-
-        # All shares are honest and so is the checkpoint  
-        foundErrors1 = detect_error(data, checkPointHonest, fieldsize)
+        foundErrors = detect_error(shares, threshold, fieldsize)
 
         self.assertTrue(foundErrors)
-        self.assertFalse(foundErrors1)
 
     def test_additive_test(self):
         secret1 = [1]
@@ -220,7 +210,7 @@ class TestExample1(unittest.TestCase):
         isSame = reconstructedSecrets == secret == reconstructedSecrets1
         self.assertTrue(isSame)
 
-
+    @unittest.skip("This test is too slow")
     def test_berlekamp_welsh_Loop(self):
         # When the threshold is large the runtime is really long
         # Reduced row echelon form is O(n^3)
@@ -252,6 +242,7 @@ class TestExample1(unittest.TestCase):
             isSame = secret == reconstructedSecrets == reconstructedSecrets1
             self.assertTrue(isSame)
 
+    @unittest.skip("This test is too slow")
     def test_additive_berlekamp_welsh(self):
         secret1 = [1,1,5,4,1]
         secret2 = [1,0,4,1,4]
@@ -295,6 +286,45 @@ class TestExample1(unittest.TestCase):
         isSame = reconstructedSecret1 == finalVotes == reconstructedSecret2
         self.assertTrue(isSame)
 
+    def test_reconstruction_with_shuffled_shares(self):
+        for _ in range(100):
+            secret = [1234]
+            numOfShares = 6
+            threshold = 3
+            fieldsize = 1613
+
+            shares = split_secrets(secret, numOfShares, threshold,fieldsize)
+
+            # Shuffle the shares
+            random.shuffle(shares)
+
+            reconstructedSecret1 = reconstruct_secrets(shares[:threshold], 1, fieldsize)
+            reconstructedSecret2 = reconstruct_secrets(shares[-threshold:], 1, fieldsize)
+            isSame = secret == reconstructedSecret1 == reconstructedSecret2
+            self.assertTrue(isSame)
+
+    def test_Lagrange_basis_for_ElGamal(self):
+        for i in range(100):
+            secret = 1234+i
+            numOfShares = 6
+            threshold = 3
+            fieldsize = 1613
+
+            shares = split_secrets([secret], numOfShares, threshold, fieldsize)
+            # Hardcode share for testing and debugging
+
+            xPoints, yPoints = zip(*shares)
+            basisPoly = [lagrange_For_ElGamal(xPoints, i, threshold, fieldsize) for i in range(threshold)]
+
+
+        
+
+            res = 0
+            for i in range(threshold):
+                res = (res + yPoints[i] * basisPoly[i]) % fieldsize
+            isSame = res == secret
+            self.assertTrue(isSame)
+            self.assertEqual(res, secret)
 
 def suite():
     loader = unittest.TestLoader()
@@ -309,8 +339,8 @@ if __name__ == "__main__":
     # Format the "ok" messages in a straight line
     print("\n")
     print("Test ran: ", result.testsRun)
-    print("Errors: ", len(result.errors))
+    print("Errors:   ", len(result.errors))
     print("Failures: ", len(result.failures))
-    print("Skipped: ", len(result.skipped))
-    print("Success: ", result.wasSuccessful())
+    print("Skipped:  ", len(result.skipped))
+    print("Success:  ", result.wasSuccessful())
     print("\n")

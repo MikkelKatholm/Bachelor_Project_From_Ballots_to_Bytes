@@ -1,3 +1,4 @@
+import sympy as sp
 import random
 from functools import reduce
 
@@ -35,21 +36,22 @@ t:          Threshold
 fieldsize:  The big prime number to use for the finite field
 """
 def split_secrets(secrets, n, t, fieldsize):
+    if type(secrets) is int:
+        secrets = [secrets]
+
     if (n < t):
         raise ValueError("number of shares n must be larger than threshold t")
     k = len(secrets)
 
-    pointsForPoly = []
+
+    xValues = [i+1 for i in range(-k,t-1)]
     pointsForShares = [ i for i in range(1,n+1) ]
-    coefficients = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
+    pointsToIntercect = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
     
     # Make a list of points where (-len(secrets), f(-len(secrets))), (-len(secrets)+1, f(-len(secrets)+1)), ..., (0, f(0)
-    for i in range(-k, 0+t-1):
-        pointsForPoly.append((i+1))
 
-    values = secrets + coefficients
-
-    polynomial = list(zip(pointsForPoly, values))
+    values = secrets + pointsToIntercect
+    polynomial = list(zip(xValues, values))
     shares = [ (p,lagrange_interpolate(p, polynomial, fieldsize)) for p in pointsForShares]
     return shares
 
@@ -101,20 +103,9 @@ def reconstruct_secrets(shares, numOfSecrets, fieldsize):
 
 
 """
-Check if the given data point is valid by reconstructing the polynomial and checking if the y value is the same
-"""
-def detect_error(dataPoints, checkPoint, fieldsize):
-    x = checkPoint[0]
-    y = checkPoint[1]
-    y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
-
-    return y_reconstructed != y 
-
-"""
 Berlekamp-Welsh algorithm for error correction 
 """
 def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
-    import sympy as sp
     k = maxNumOfErrors 
     n = finalDegree 
     n2k = n + 2*k 
@@ -184,3 +175,54 @@ def berlekamp_welsh(shares, maxNumOfErrors, finalDegree, fieldsize):
     shares.sort(key=lambda x: x[0])
 
     return shares
+
+"""  
+find the polynomial that interpolates the data points and return the coefficients in order of the highest degree to the lowest
+f(x)= a**3*x + b**2*x + c*x + d becomes [a,b,c,d]
+"""
+def get_Poly(dataPoints, threshold, fieldsize):
+    x = sp.symbols('x')
+
+    # trim the data points to the threshold
+    dataPoints = dataPoints[:(threshold)]
+
+    # Polynomial without a finite field
+    poly = sp.polys.polyfuncs.interpolate(dataPoints, x)
+    a = (str(poly).replace('- ', '-').replace('+ ', '+').split(' '))[::-1]
+    
+    for i in range(len(a)):
+        if i == 1:
+            a[i] = a[i].replace('*x', '')
+        else:
+            a[i] = a[i].replace("*x**" + str(i),'') 
+    a = a[::-1]
+    print(a)
+    return a
+
+def detect_error(points, threshold, fieldsize):
+    def check_Point(dataPoints, checkPoint, fieldsize):
+        x = checkPoint[0]
+        y = checkPoint[1]
+        y_reconstructed = lagrange_interpolate(x, dataPoints, fieldsize)
+        return y_reconstructed != y 
+    
+    if len(points) < threshold:
+        raise ValueError("Not enough points to interpolate")
+
+    polyPoints = points[:threshold]
+    checkPoints = points[threshold:]
+
+    for point in checkPoints:
+        if check_Point(polyPoints, point, fieldsize):
+            return True
+    return False
+
+
+def lagrange_For_ElGamal(xPoints, index, threshold, fieldsize):
+    result = 1
+    for i in range(threshold):
+        if i == index:
+            continue
+        temp = div_mod(xPoints[i], xPoints[i] - xPoints[index], fieldsize)
+        result = (result * temp) % fieldsize
+    return result
