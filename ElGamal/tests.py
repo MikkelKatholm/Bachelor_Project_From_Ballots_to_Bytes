@@ -60,38 +60,27 @@ class TestExample1(unittest.TestCase):
     def test_shamir(self):
         bits = 12
         p, g, pk, sk = gen_keys(bits)
-        
-        #p, g, pk, sk = 2879, 1549, 835, 2464
         q = (p-1)//2
-        print(f"\np: {p}, g: {g}, pk: {pk}, sk: {sk}, q: {q}")
 
 
 
 
 
-        m1 = 1
+        m1 = 0
         keyHolders = 3
         threshold = 2
-        shares = generate_key_shares(sk, keyHolders, threshold, p)
-        print(f"shares: {shares}")
-        skRec = shamir.reconstruct_secrets(shares, 1,p)
+        shares = generate_key_shares(sk, keyHolders, threshold, q)
+        skRec = shamir.reconstruct_secrets(shares, 1,q)
         self.assertEqual([sk], skRec)
 
 
         c = encrypt_for_shamir(pk, m1, g, p)
         
-        grsk = exp_mod(g, 1102, p)
-        grsk = exp_mod(grsk,sk, p)
-        print(f"grsk: {grsk}")
-
         c1, _ = c
-        print(f"c: {c}")
-        dis = [(share[0], calculate_di_for_shamir(c1, share, q)) for share in shares]   # Correct, tested by hand
-        print(f"dis From test file: {dis}")
+        dis = [(share[0], calculate_di_for_shamir(c1, share, p)) for share in shares]   # Correct, tested by hand
         result = decrypt_for_shamir(dis, c, g, threshold, p)
 
         isSame = result == m1
-        print(f"result: {result}")
         self.assertTrue(isSame, "Decryption failed")
 
 

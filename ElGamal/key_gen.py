@@ -29,8 +29,9 @@ def find_primitive_root(p):
             
 def gen_keys(bits):
     p = get_prime(bits)
+    q = (p-1)//2
     g = find_primitive_root(p)
     g = exp_mod(g, 2, p)
-    sk = random.SystemRandom().randint(1,p-1)
+    sk = random.SystemRandom().randint(1,q-1)
     pk = exp_mod(g, sk, p)
     return (p, g, pk, sk)

@@ -29,22 +29,18 @@ def decrypt_for_additive(sk,g,c,p,numOfVoters):
     raise Exception("Decryption failed")
 
 def encrypt_for_shamir(pk, m, g, p):
-    # Get r in range {1,2,...,p-1}
-    r = random.SystemRandom().randint(1,p-1)
-    r = 1102
+    q = (p-1)//2
+    r = random.SystemRandom().randint(1,q-1)
     print(f"r: {r}")
     c1 = exp_mod(g,r,p)
     c2 = (exp_mod(g,m,p) * exp_mod(pk,r,p)) % p
     return (c1,c2)
 
-def generate_key_shares(sk, numOfShares, threshold, p):
-    q = (p-1)//2
-    return shamir.split_secrets(sk, numOfShares, threshold, p)
+def generate_key_shares(sk, numOfShares, threshold, q):
+    return shamir.split_secrets(sk, numOfShares, threshold, q)
 
 def calculate_di_for_shamir(c1, share, p):
-    q = (p-1)//2
-    sharemodq = share[1] % q
-    di = exp_mod(c1, sharemodq, p)
+    di = exp_mod(c1, share[1], p)
     return di
 
 
@@ -69,6 +65,9 @@ def decrypt_for_shamir(shares, c, g, threshold, p):
         d *= diPowerLbp[i]
     print(f"d: {d % p}")
 
+    dm1 = exp_mod(d, -1, p)
+    print(f"dm1: {dm1}")
+    gm = (c2 * dm1) % p
 
     possible_m = [i for i in range(0,2)]
     for m in possible_m:
