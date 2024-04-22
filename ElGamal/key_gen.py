@@ -5,7 +5,15 @@ def exp_mod(base, exp, mod):
     return pow(base, exp, mod)
 
 def get_prime(bits):
-    return sp.randprime(2**(bits-1), 2**bits)
+
+    while True:
+        # Generate a random prime number of desired length
+        prime_candidate = sp.randprime(2**(bits-1), 2**bits)
+        # Check if the prime candidate is safe
+        if sp.isprime((prime_candidate - 1) // 2):
+            return prime_candidate
+
+
 
 def find_primitive_root(p):
     if p == 2:

@@ -1,7 +1,7 @@
 import sympy as sp
 import random
 from main import div_mod
-
+import gmpy2 as gmp
 
 def exp_mod(base, exp, mod):
     return pow(base, exp, mod)
@@ -77,9 +77,12 @@ def test_generate_large_safe_prime():
     print("Generated Safe Prime:", safe_prime)
 
 
+def whatthefuck():
+    sum_ = gmp.mpz()
+    share1 = 932
+    sums = gmp.add(sum_, share1)
+    print(f"sums: {sums}")
+
 if __name__ == "__main__":
     # set the seed for the random number generator
-    random.seed(0)
-
-    #main()
-    test_generate_large_safe_prime()
+    whatthefuck()

@@ -29,44 +29,45 @@ def decrypt_for_additive(sk,g,c,p,numOfVoters):
     raise Exception("Decryption failed")
 
 def encrypt_for_shamir(pk, m, g, p):
+    # Get r in range {1,2,...,p-1}
     r = random.SystemRandom().randint(1,p-1)
-#    r = 185
+    r = 1102
     print(f"r: {r}")
-
     c1 = exp_mod(g,r,p)
     c2 = (exp_mod(g,m,p) * exp_mod(pk,r,p)) % p
     return (c1,c2)
 
 def generate_key_shares(sk, numOfShares, threshold, p):
+    q = (p-1)//2
     return shamir.split_secrets(sk, numOfShares, threshold, p)
 
 def calculate_di_for_shamir(c1, share, p):
-    di = exp_mod(c1, share[1], p)
+    q = (p-1)//2
+    sharemodq = share[1] % q
+    di = exp_mod(c1, sharemodq, p)
     return di
 
 
 def decrypt_for_shamir(shares, c, g, threshold, p):
+    q = (p-1)//2
     c1,c2 = c
     xPoints, dis = zip(*shares)
 
     print(f"dis: {dis}")
-    # Lagrange Basis Polynomial
-    lbp = [shamir.lagrange_For_ElGamal(xPoints, i, threshold+1, p) for i in range(threshold+1)]
+    # Lagrange Basis Polynomial use prime q
+    lbp = [shamir.lagrange_For_ElGamal(xPoints, i, threshold, q) for i in range(threshold)]
     print(f"lbp: {lbp}")
     
     diPowerLbp = [exp_mod(dis[i], lbp[i], p) for i in range(threshold)]
 
-        
+
 
 
     print(f"diPowerLbp: {diPowerLbp}")
     d = 1
     for i in range(threshold):
-        d = (d * diPowerLbp[i]) % p
-    print(f"d: {d}")
-#    grsk = exp_mod(g,185, p)
-#    grsk = exp_mod(grsk,185,p)
-#    print(f"grsk: {grsk}")
+        d *= diPowerLbp[i]
+    print(f"d: {d % p}")
 
 
     possible_m = [i for i in range(0,2)]
