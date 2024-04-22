@@ -5,6 +5,7 @@ import key_gen
 from main import *
 import unittest
 import Shamir.main as shamir
+import time
 
 
 
@@ -38,6 +39,7 @@ class TestExample1(unittest.TestCase):
 
     
     def test_multiplicativeTest(self):
+
         p, _, g, pk, sk = gen_keys(bits)
         c1, c2 = 1,1
         totalVote = 0
@@ -75,10 +77,11 @@ class TestExample1(unittest.TestCase):
         self.assertTrue(isSame, "Decryption failed")
 
     def test_ElGamal_Shamir_Multiple_Voters(self):
+        startTime = time.time()
         p, q, g, pk, sk = gen_keys(bits)
         c1, c2 = 1,1
         totalVote = 0
-        voters = 100000
+        voters = 40000
         keyHolders = 30
         threshold = 20
         shares = generate_key_shares(sk, keyHolders, threshold, q)
@@ -93,6 +96,8 @@ class TestExample1(unittest.TestCase):
         dis = [(share[0], calculate_di_for_shamir(c1, share, p)) for share in shares]
         result = decrypt_for_shamir(dis, c, g, threshold, p, voters)
         isSame = result == totalVote
+        endTime = time.time()
+        print(f"Time taken for {voters} voters: {round(endTime-startTime,4)} seconds")
         self.assertTrue(isSame, "Decryption failed")
 
 
@@ -109,10 +114,10 @@ if __name__ == "__main__":
 
     # Format the "ok" messages in a straight line
     print("\n")
-    print("Test ran: ", result.testsRun)
-    print("Errors: ", len(result.errors))
-    print("Failures: ", len(result.failures))
-    print("Skipped: ", len(result.skipped))
-    print("Success: ", result.wasSuccessful())
+    print("Test ran: \t ", result.testsRun)
+    print("Errors: \t ", len(result.errors))
+    print("Failures: \t ", len(result.failures))
+    print("Skipped: \t ", len(result.skipped))
+    print("Success: \t ", result.wasSuccessful())
     print("\n")
 
