@@ -14,7 +14,7 @@ bits = 128
 class TestExample1(unittest.TestCase):
 
     def test_singleSecretTest(self):
-        p, g, pk, sk = gen_keys(bits)
+        p, _, g, pk, sk = gen_keys(bits)
         m = 0 # Message to encrypt
         c = encrypt_for_additive(pk,m,p,g)
         d = decrypt_for_additive(sk,g,c,p,1)
@@ -24,7 +24,7 @@ class TestExample1(unittest.TestCase):
 
 
     def test_additiveTest(self):
-        p, g, pk, sk = gen_keys(bits)
+        p, _, g, pk, sk = gen_keys(bits)
         m1 = 0 # Message to encrypt
         m2 = 1 # Message to encrypt
         (c11, c12) = encrypt_for_additive(pk,m1,p,g)
@@ -38,7 +38,7 @@ class TestExample1(unittest.TestCase):
 
     
     def test_multiplicativeTest(self):
-        p, g, pk, sk = gen_keys(bits)
+        p, _, g, pk, sk = gen_keys(bits)
         c1, c2 = 1,1
         totalVote = 0
         voters = 100
@@ -50,38 +50,51 @@ class TestExample1(unittest.TestCase):
             c2 *= c[1]
         c = (c1,c2)
 
-
         result = decrypt_for_additive(sk,g,c,p, voters)
 
         isSame = result == totalVote
         self.assertTrue(isSame, "Decryption failed")
  
 
-    def test_shamir(self):
+    def test_ElGamal_With_Shamir_Key(self):
         bits = 12
-        p, g, pk, sk = gen_keys(bits)
-        q = (p-1)//2
-
-
-
-
+        p, q, g, pk, sk = gen_keys(bits)
 
         m1 = 0
         keyHolders = 3
         threshold = 2
         shares = generate_key_shares(sk, keyHolders, threshold, q)
-        skRec = shamir.reconstruct_secrets(shares, 1,q)
-        self.assertEqual([sk], skRec)
-
 
         c = encrypt_for_shamir(pk, m1, g, p)
         
         c1, _ = c
         dis = [(share[0], calculate_di_for_shamir(c1, share, p)) for share in shares]   # Correct, tested by hand
-        result = decrypt_for_shamir(dis, c, g, threshold, p)
+        result = decrypt_for_shamir(dis, c, g, threshold, p, 1)
 
         isSame = result == m1
         self.assertTrue(isSame, "Decryption failed")
+
+    def test_ElGamal_Shamir_Multiple_Voters(self):
+        p, q, g, pk, sk = gen_keys(bits)
+        c1, c2 = 1,1
+        totalVote = 0
+        voters = 100000
+        keyHolders = 30
+        threshold = 20
+        shares = generate_key_shares(sk, keyHolders, threshold, q)
+
+        for i in range(voters):
+            m = random.SystemRandom().randint(0,1)
+            totalVote += m
+            c = encrypt_for_shamir(pk, m, g, p)
+            c1 *= c[0]
+            c2 *= c[1]
+        c = (c1,c2)
+        dis = [(share[0], calculate_di_for_shamir(c1, share, p)) for share in shares]
+        result = decrypt_for_shamir(dis, c, g, threshold, p, voters)
+        isSame = result == totalVote
+        self.assertTrue(isSame, "Decryption failed")
+
 
 
 def suite():

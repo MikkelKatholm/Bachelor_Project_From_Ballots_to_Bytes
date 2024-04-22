@@ -34,4 +34,4 @@ def gen_keys(bits):
     g = exp_mod(g, 2, p)
     sk = random.SystemRandom().randint(1,q-1)
     pk = exp_mod(g, sk, p)
-    return (p, g, pk, sk)
+    return (p, q, g, pk, sk)
