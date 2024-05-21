@@ -44,7 +44,7 @@ def split_secrets(secrets, n, t, fieldsize):
     k = len(secrets)
 
 
-    xValues = [i+1 for i in range(-k,t-1)]
+    xValues = [(i+1)% fieldsize for i in range(-k,t-1)]
     pointsForShares = [ i for i in range(1,n+1) ]
     pointsToIntercect = [random.SystemRandom().randint(0,fieldsize-1) for _ in range(t-1)]
     
@@ -96,7 +96,7 @@ Reconstructs multiple secrets given m data points where:
 """
 def reconstruct_secrets(shares, numOfSecrets, fieldsize):
     # List of points where the secrets are encoded
-    points = [i for i in range(-numOfSecrets+1,1)]
+    points = [i % fieldsize for i in range(-numOfSecrets+1,1)]
 
     # Calculate the secrets encoded at the points
     return [ lagrange_interpolate(p, shares, fieldsize) for p in points ]

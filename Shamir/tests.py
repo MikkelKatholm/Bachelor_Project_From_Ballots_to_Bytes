@@ -314,11 +314,7 @@ class TestExample1(unittest.TestCase):
             # Hardcode share for testing and debugging
 
             xPoints, yPoints = zip(*shares)
-            print(f"xPoints: {xPoints}")
             basisPoly = [lagrange_For_ElGamal(xPoints, i, threshold, fieldsize) for i in range(threshold)]
-            print(f"basisPoly: {basisPoly}")
-
-        
 
             res = 0
             for i in range(threshold):
@@ -326,6 +322,21 @@ class TestExample1(unittest.TestCase):
             isSame = res == secret
             self.assertTrue(isSame)
             self.assertEqual(res, secret)
+
+    def test_wrap_around(self):
+        secrets = [4,0]
+        threshold = 9
+        numOfShares = 10
+        fieldsize = 11
+        sharedNeeded = len(secrets) + threshold - 1
+
+        shares = split_secrets(secrets, numOfShares, threshold, fieldsize)
+        #Reconstruct the secrets
+        reconstructedSecret = reconstruct_secrets(shares[:sharedNeeded], len(secrets), fieldsize)
+        isSame = secrets == reconstructedSecret
+        self.assertTrue(isSame)
+
+
 
 def suite():
     loader = unittest.TestLoader()
